@@ -54,6 +54,7 @@
                 displayMessage('[PUBLISH: sent]', 'timetoken: ' + response.timetoken + " " + uuid);
 
                 if(uuid != clientUUID) {
+                    story = updatedStory;
                     continueStory();
                 }
             }
