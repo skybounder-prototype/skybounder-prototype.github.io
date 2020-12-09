@@ -7,7 +7,7 @@
 
     const messagesTop = document.getElementById('messages-top');
     const sendButton = document.getElementById('publish-button');
-    sendButton.addEventListener('click', () => {submitUpdate(theEntry, clientUUID)});
+    sendButton.addEventListener('click', () => {submitUpdate(theEntry, clientUUID, story)});
 
     const clientUUID = PubNub.generateUUID();
     const theChannel = 'Skybounder';
@@ -21,6 +21,9 @@
     });
 
     pubnub.addListener({
+        storyEvent: function(event) {
+            story = event.storyEvent.updatedStory
+        },
         message: function(event) {
             displayMessage('[MESSAGE: received]', event.message.entry + ': ' + event.message.update);
         },
@@ -41,10 +44,11 @@
         withPresence: true
     });
 
-    submitUpdate = function(anEntry, uuid) {
+    submitUpdate = function(anEntry, uuid, updatedStory) {
         pubnub.publish({
             channel : theChannel,
-            message : {'entry' : anEntry, 'update' : "CHOICE!"}
+            message : {'entry' : anEntry, 'update' : "CHOICE!"},
+            storyEvent: {'storyEvent' : updatedStory}
         },
         function(status, response) {
             if (status.error) {
