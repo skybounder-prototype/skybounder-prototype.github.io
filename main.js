@@ -24,6 +24,7 @@
         storyEvent: function(event) {
             story = event.storyEvent.updatedStory;
             continueStory();
+            displayMessage("UPDATE", "Updated the story.");
         },
         message: function(event) {
             displayMessage('[MESSAGE: received]', event.message.entry + ': ' + event.message.update);
