@@ -22,7 +22,8 @@
 
     pubnub.addListener({
         storyEvent: function(event) {
-            story = event.storyEvent.updatedStory
+            story = event.storyEvent.updatedStory;
+            continueStory();
         },
         message: function(event) {
             displayMessage('[MESSAGE: received]', event.message.entry + ': ' + event.message.update);
@@ -47,7 +48,7 @@
     submitUpdate = function(anEntry, uuid, updatedStory) {
         pubnub.publish({
             channel : theChannel,
-            message : {'entry' : anEntry, 'update' : "CHOICE!"},
+            message : {'entry' : anEntry, 'update' : uuid},
             storyEvent: {'storyEvent' : updatedStory}
         },
         function(status, response) {
