@@ -7,11 +7,11 @@
 
     const messagesTop = document.getElementById('messages-top');
     const sendButton = document.getElementById('publish-button');
-    sendButton.addEventListener('click', () => {submitUpdate(theEntry, clientUUID, story)});
+    sendButton.addEventListener('click', () => {submitUpdate(theEntry, clientUUID)});
 
     const clientUUID = PubNub.generateUUID();
     const theChannel = 'Skybounder';
-    const theEntry = 'Earth';
+    const theEntry = 'Update';
 
     const pubnub = new PubNub({
         // replace the following with your own publish and subscribe keys
@@ -31,7 +31,7 @@
             displayMessage('[STATUS: ' + event.category + ']', 'connected to channels: ' + event.affectedChannels);
 
             if (event.category == 'PNConnectedCategory') {
-                submitUpdate(theEntry, clientUUID, story);
+                submitUpdate(theEntry, clientUUID);
             }
         }
     });
@@ -41,7 +41,7 @@
         withPresence: true
     });
 
-    submitUpdate = function(anEntry, uuid, updatedStory) {
+    submitUpdate = function(anEntry, uuid) {
         pubnub.publish({
             channel : theChannel,
             message : {'entry' : anEntry, 'update' : "CHOICE!"}
@@ -51,12 +51,15 @@
                 console.log(status)
             }
             else {
-                displayMessage('[PUBLISH: sent]', 'timetoken: ' + response.timetoken + " " + uuid);
-
-                if(uuid != clientUUID) {
-                    story = updatedStory;
-                    continueStory();
-                }
+                // if(uuid != clientUUID) {
+                    if(uuid != clientUUID) {
+                        displayMessage('[PUBLISH: sent] from other', 'timetoken: ' + response.timetoken);
+                    } else {
+                        displayMessage('[PUBLISH: sent] from this', 'timetoken: ' + response.timetoken);
+                    }
+                    // story = updatedStory;
+                    // continueStory();
+                // }
             }
         });
     };
