@@ -22,8 +22,8 @@
 
     pubnub.addListener({
         storyEvent: function(event) {
-            story = event.storyEvent.story;
-            continueStory();
+            // story = event.storyEvent.story;
+            // continueStory();
             displayMessage("UPDATE", "Updated the story.");
         },
         message: function(event) {
