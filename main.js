@@ -22,7 +22,7 @@
 
     pubnub.addListener({
         storyEvent: function(event) {
-            story = event.storyEvent.updatedStory;
+            story = event.storyEvent.story;
             continueStory();
             displayMessage("UPDATE", "Updated the story.");
         },
@@ -50,7 +50,7 @@
         pubnub.publish({
             channel : theChannel,
             message : {'entry' : anEntry, 'update' : uuid},
-            storyEvent: {'storyEvent' : updatedStory}
+            storyEvent: {'story' : updatedStory}
         },
         function(status, response) {
             if (status.error) {
