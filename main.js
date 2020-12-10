@@ -1,13 +1,14 @@
 (function(storyContent) {
         // Create ink story from the content using inkjs
     var story = new inkjs.Story(storyContent);
+    var firstMessage = true;
 
 
     // start pubnub
 
     const messagesTop = document.getElementById('messages-top');
     const sendButton = document.getElementById('publish-button');
-    sendButton.addEventListener('click', () => {submitUpdate(theEntry, clientUUID, story)});
+    // sendButton.addEventListener('click', () => {submitUpdate(theEntry, "-1")});
 
     const clientUUID = PubNub.generateUUID();
     const theChannel = 'Skybounder';
@@ -21,13 +22,27 @@
     });
 
     pubnub.addListener({
-        storyEvent: function(event) {
-            // story = event.storyEvent.story;
-            // continueStory();
-            displayMessage("UPDATE", "Updated the story.");
-        },
         message: function(event) {
             displayMessage('[MESSAGE: received]', event.message.entry + ': ' + event.message.update);
+            if(firstMessage) {
+                firstMessage = false;
+            } else {
+                // Don't follow <a> link
+                // event.preventDefault();
+
+                var choiceIndex = parseInt(event.message.update);
+                if(choiceIndex >= 0) {
+                    displayMessage("AH", choiceIndex);
+                    // Remove all existing choices
+                    removeAll("p.choice");
+
+                    // Tell the story where to go next
+                    story.ChooseChoiceIndex(choiceIndex);
+
+                    // Aaand loop
+                    continueStory();
+                 }
+            }
         },
         presence: function(event) {
             displayMessage('[PRESENCE: ' + event.action + ']', 'uuid: ' + event.uuid + ', channel: ' + event.channel);
@@ -46,11 +61,10 @@
         withPresence: true
     });
 
-    submitUpdate = function(anEntry, uuid, updatedStory) {
+    submitUpdate = function(anEntry, choiceIndex) {
         pubnub.publish({
             channel : theChannel,
-            message : {'entry' : anEntry, 'update' : uuid},
-            storyEvent: updatedStory
+            message : {'entry' : anEntry, 'update' : choiceIndex}
         },
         function(status, response) {
             if (status.error) {
@@ -199,19 +213,19 @@
             var choiceAnchorEl = choiceParagraphElement.querySelectorAll("a")[0];
             choiceAnchorEl.addEventListener("click", function(event) {
 
-                // submitUpdate(theEntry, "CHOICE!", event);
+                submitUpdate(theEntry, choice.index);
 
-                // Don't follow <a> link
-                event.preventDefault();
+                // // Don't follow <a> link
+                // event.preventDefault();
 
-                // Remove all existing choices
-                removeAll("p.choice");
+                // // Remove all existing choices
+                // removeAll("p.choice");
 
-                // Tell the story where to go next
-                story.ChooseChoiceIndex(choice.index);
+                // // Tell the story where to go next
+                // story.ChooseChoiceIndex(choice.index);
 
-                // Aaand loop
-                continueStory();
+                // // Aaand loop
+                // continueStory();
             });
         });
 
