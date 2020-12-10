@@ -50,9 +50,9 @@
         status: function(event) {
             displayMessage('[STATUS: ' + event.category + ']', 'connected to channels: ' + event.affectedChannels);
 
-            if (event.category == 'PNConnectedCategory') {
-                submitUpdate(theEntry, clientUUID);
-            }
+            // if (event.category == 'PNConnectedCategory') {
+            //     submitUpdate(theEntry, clientUUID);
+            // }
         }
     });
 
