@@ -50,7 +50,7 @@
         pubnub.publish({
             channel : theChannel,
             message : {'entry' : anEntry, 'update' : uuid},
-            storyEvent: {'story' : uuid}
+            storyEvent: updatedStory
         },
         function(status, response) {
             if (status.error) {
