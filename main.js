@@ -7,7 +7,7 @@
     // start pubnub
 
     const messagesTop = document.getElementById('messages-top');
-    const sendButton = document.getElementById('publish-button');
+    // const sendButton = document.getElementById('publish-button');
     // sendButton.addEventListener('click', () => {submitUpdate(theEntry, "-1")});
 
     const clientUUID = PubNub.generateUUID();
@@ -23,7 +23,7 @@
 
     pubnub.addListener({
         message: function(event) {
-            displayMessage('[MESSAGE: received]', event.message.entry + ': ' + event.message.update);
+            // displayMessage('[MESSAGE: received]', event.message.entry + ': ' + event.message.update);
             if(firstMessage) {
                 firstMessage = false;
             } else {
@@ -45,10 +45,10 @@
             }
         },
         presence: function(event) {
-            displayMessage('[PRESENCE: ' + event.action + ']', 'uuid: ' + event.uuid + ', channel: ' + event.channel);
+            // displayMessage('[PRESENCE: ' + event.action + ']', 'uuid: ' + event.uuid + ', channel: ' + event.channel);
         },
         status: function(event) {
-            displayMessage('[STATUS: ' + event.category + ']', 'connected to channels: ' + event.affectedChannels);
+            // displayMessage('[STATUS: ' + event.category + ']', 'connected to channels: ' + event.affectedChannels);
 
             // if (event.category == 'PNConnectedCategory') {
             //     submitUpdate(theEntry, clientUUID);
@@ -72,11 +72,11 @@
             }
             else {
                 // if(uuid != clientUUID) {
-                    if(uuid != clientUUID) {
-                        displayMessage('[PUBLISH: sent] from other', 'timetoken: ' + response.timetoken);
-                    } else {
-                        displayMessage('[PUBLISH: sent] from this', 'timetoken: ' + response.timetoken);
-                    }
+                    // if(uuid != clientUUID) {
+                    //     displayMessage('[PUBLISH: sent] from other', 'timetoken: ' + response.timetoken);
+                    // } else {
+                    //     displayMessage('[PUBLISH: sent] from this', 'timetoken: ' + response.timetoken);
+                    // }
                     // story = updatedStory;
                     // continueStory();
                 // }
