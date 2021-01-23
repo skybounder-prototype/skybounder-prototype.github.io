@@ -42,7 +42,7 @@
 
             } else if(event.message.type == "receiveParagraph" && event.message.index == playerNum) {
                 if(event.message.text == "host" && !isHost) return;
-                
+
                 var paragraphIndex = 0;
                 var delay = 0.0;
                 
@@ -128,24 +128,10 @@
                     submitUpdate("madeChoice", "", event.message.index);
                  }
 
-            } else if(event.message.type == "selectChoice" && event.message.index == playerNum) {
+            } else if(event.message.type == "madeChoice" && event.message.index == playerNum) {
 
                 removeAll("p.choice");
                 submitUpdate("requestParagraph", "", event.message.index);
-
-            } else if(event.message.type == "receiveChoiceSelection" && isHost) {
-
-                var choiceIndex = event.message.index;
-                if(choiceIndex >= 0) {
-                    // Remove all existing choices
-                    removeAll("p.choice");
-
-                    // Tell the story where to go next
-                    story.ChooseChoiceIndex(choiceIndex);
-
-                    // Aaand loop
-                    continueStory();
-                 }
 
             } else if(event.message.type == "joinRequest") {
 
@@ -349,8 +335,12 @@
                     submitUpdate('joinRequest', clientUUID, clientUUID);
                     removeAll("p");
                 } else {
-                    submitUpdate("requestParagraph", "host", playerNum);
+                    continueStory();
                     isHost = true;
+                }
+
+                if(choice.text == "Begin Game") {
+                    submitUpdate("requestParagraph", "host", playerNum);
                 }
             });
         });
