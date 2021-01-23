@@ -69,7 +69,7 @@
                             nextPlayer = 1;
                         }
 
-                        submitUpdate("passGameToPlayer", "", nextPlayer);
+                        submitUpdate("receiveParagraph", paragraphText, nextPlayer);
                         
                         return;
                     }
@@ -162,13 +162,6 @@
                     submitUpdate("welcome", "Welcome player " + playerNum + ".", clientUUID);
                 }
                 isConnected = true;
-
-            } else if(event.message.type == "advance") {
-
-                currentPlayer = event.message.index;
-                if(currentPlayer == playerNum) {
-                    shouldHide = false;
-                }
 
             } else if(event.message.type == "welcome") {
 
@@ -305,15 +298,6 @@
                         restart();
                         return;
                     }
-                }
-
-                else if( tag == "ADVANCE" && currentPlayer == playerNum ) {
-                    shouldHide = true;
-                    document.body.classList.add("hide");
-                    currentPlayer = playerNum + 1;
-                    if(currentPlayer > totalPlayers)
-                        currentPlayer = 1;
-                    // submitUpdate("advance", "", currentPlayer);
                 }
             }
 
