@@ -7,6 +7,7 @@
     var totalPlayers = 1;
     var currentPlayer = 1;
     var shouldHide = false;
+    var isConnected = false;
 
     // start pubnub
 
@@ -149,10 +150,9 @@
 
             } else if(event.message.type == "joinRequest") {
 
-                if(playerNum == 1) {
+                if(playerNum == 1 && !isConnected) {
                     totalPlayers++;
-                    submitUpdate("joinResponse", clientUUID, totalPlayers);
-                    displayMessage("JOINED", "Player " + playerNum + " joined.")
+                    submitUpdate("joinResponse", event.message.text, totalPlayers);
                 }
 
             } else if(event.message.type == "joinResponse") {
@@ -160,10 +160,11 @@
                 {
                     playerNum = event.message.index;
                     totalPlayers = playerNum;
-                    displayMessage("WELCOME", "Welcome player " + playerNum + ".")
                     shouldHide = true;
                     document.body.classList.add("hide");
                 }
+                submitUpdate("welcome", "Welcome player", playerNum);
+                isConnected = true;
 
             } else if(event.message.type == "advance") {
 
@@ -172,6 +173,10 @@
                     shouldHide = false;
                     document.body.classList.remove("hide");
                 }
+            } else if(event.message.type == "welcome") {
+
+                displayMessage("WELCOME", "Welcome player " + playerNum + ".")
+
             }
         },
         presence: function(event) {
@@ -215,7 +220,7 @@
         pmessage.appendChild(document.createTextNode(aMessage));
     }
 
-    submitUpdate('joinRequest', '', 1);
+    submitUpdate('joinRequest', clientUUID, 1);
 
     // end pubnub
 
