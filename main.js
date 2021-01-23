@@ -158,6 +158,7 @@
             } else if(event.message.type == "joinResponse") {
                 if(clientUUID != event.message.text)
                 {
+                    displayMessage("ID", event.message.text + " my: " + clientUUID);
                     playerNum = event.message.index;
                     totalPlayers = playerNum;
                     shouldHide = true;
@@ -176,7 +177,7 @@
             } else if(event.message.type == "welcome") {
 
                 if(clientUUID != event.message.index) {
-                    displayMessage("WELCOME", event.message.text)
+                    displayMessage("WELCOME", event.message.text);
                 }
 
             }
