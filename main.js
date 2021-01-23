@@ -63,6 +63,8 @@
                     // customised to be used for other things too.
                     var splitTag = splitPropertyTag(tag);
 
+                    displayMessage("TAG", tag);
+
                     if( tag == "ADVANCE" ) {
                         removeAll("p")
                         var nextPlayer = playerNum + 1;
