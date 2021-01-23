@@ -162,8 +162,8 @@
                     totalPlayers = playerNum;
                     shouldHide = true;
                     document.body.classList.add("hide");
+                    submitUpdate("welcome", "Welcome player", playerNum);
                 }
-                submitUpdate("welcome", "Welcome player", playerNum);
                 isConnected = true;
 
             } else if(event.message.type == "advance") {
