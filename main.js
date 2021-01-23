@@ -25,7 +25,7 @@
         uuid: clientUUID
     });
 
-    submitUpdate("joinRequest", "");
+    submitUpdate("joinRequest", "", 1);
 
     pubnub.addListener({
         message: function(event) {
