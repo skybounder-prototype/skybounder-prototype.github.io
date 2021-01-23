@@ -150,7 +150,7 @@
 
             } else if(event.message.type == "joinRequest") {
 
-                if(playerNum == 1 && !isConnected) {
+                if(playerNum == 1 && !isConnected && clientUUID != event.message.text) {
                     totalPlayers++;
                     submitUpdate("joinResponse", event.message.text, totalPlayers);
                 }
@@ -162,7 +162,7 @@
                     totalPlayers = playerNum;
                     shouldHide = true;
                     document.body.classList.add("hide");
-                    submitUpdate("welcome", "Welcome player", playerNum);
+                    submitUpdate("welcome", "Welcome player " + playerNum + ".", clientUUID);
                 }
                 isConnected = true;
 
@@ -175,7 +175,9 @@
                 }
             } else if(event.message.type == "welcome") {
 
-                displayMessage("WELCOME", "Welcome player " + playerNum + ".")
+                if(clientUUID != event.message.index) {
+                    displayMessage("WELCOME", event.message.text)
+                }
 
             }
         },
@@ -220,7 +222,7 @@
         pmessage.appendChild(document.createTextNode(aMessage));
     }
 
-    submitUpdate('joinRequest', clientUUID, 1);
+    submitUpdate('joinRequest', clientUUID, clientUUID);
 
     // end pubnub
 
