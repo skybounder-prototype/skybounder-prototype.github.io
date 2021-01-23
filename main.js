@@ -161,7 +161,7 @@
                     playerNum = event.message.index;
                     totalPlayers = playerNum;
                     shouldHide = true;
-                    setVisible(".outerContainer", false);
+                    setVisible("body", false);
                     submitUpdate("welcome", "Welcome player " + playerNum + ".", clientUUID);
                 }
                 isConnected = true;
@@ -171,7 +171,7 @@
                 currentPlayer = event.message.index;
                 if(currentPlayer == playerNum) {
                     shouldHide = false;
-                    setVisible(".outerContainer", true);
+                    setVisible("body", true);
                 }
             } else if(event.message.type == "welcome") {
 
