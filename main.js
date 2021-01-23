@@ -1,7 +1,7 @@
 (function(storyContent) {
         // Create ink story from the content using inkjs
     var story = new inkjs.Story(storyContent);
-    var storyContainer = document.querySelector('#story');
+
     var firstMessage = true;
     var playerNum = 1;
     var totalPlayers = 1;
@@ -24,8 +24,6 @@
         subscribeKey: 'sub-c-1ffd009c-3a56-11eb-ab29-9acd6868450b',
         uuid: clientUUID
     });
-
-    submitUpdate("joinRequest", "", 1);
 
     pubnub.addListener({
         message: function(event) {
@@ -113,6 +111,7 @@
             } else if(event.message.type == "choice") {
                 if(playerNum == 1) return;
 
+                var delay = 0.0
                 // Create paragraph with anchor element
                 var choiceParagraphElement = document.createElement('p');
                 choiceParagraphElement.classList.add("choice");
@@ -130,7 +129,7 @@
                     removeAll("p.choice");
 
                     submitUpdate("choiceIndex", "", event.message.index);
-                }
+                });
 
             } else if(event.message.type == "choiceIndex") {
 
@@ -150,17 +149,21 @@
 
             } else if(event.message.type == "joinRequest") {
 
-                if(playerIndex == 1) {
+                if(playerNum == 1) {
                     totalPlayers++;
-                    submitUpdate("joinResponse", "", totalPlayers);
+                    submitUpdate("joinResponse", clientUUID, totalPlayers);
+                    displayMessage("JOINED", "Player " + playerNum + " joined.")
                 }
 
             } else if(event.message.type == "joinResponse") {
-                playerNum = event.message.index;
-                totalPlayers = playerNum;
-                displayMessage("WELCOME", "Welcome player " + playerNum + ".")
-                shouldHide = true;
-                document.body.classList.add("hide");
+                if(clientUUID != event.message.text)
+                {
+                    playerNum = event.message.index;
+                    totalPlayers = playerNum;
+                    displayMessage("WELCOME", "Welcome player " + playerNum + ".")
+                    shouldHide = true;
+                    document.body.classList.add("hide");
+                }
 
             } else if(event.message.type == "advance") {
 
@@ -212,6 +215,8 @@
         pmessage.appendChild(document.createTextNode(aMessage));
     }
 
+    submitUpdate('joinRequest', '', 1);
+
     // end pubnub
 
     // Global tags - those at the top of the ink file
@@ -238,6 +243,7 @@
     }
 
     var outerScrollContainer = document.querySelector('.outerContainer');
+    var storyContainer = document.querySelector('#story');
 
     // Kick off the start of the story!
     continueStory(true);
@@ -245,7 +251,7 @@
     // Main story processing function. Each time this is called it generates
     // all the next content up as far as the next set of choices.
     function continueStory(firstTime) {
-        if(playerNum != 1) return;
+        // if(playerNum != 1) return;
 
         var paragraphIndex = 0;
         var delay = 0.0;
@@ -258,7 +264,7 @@
 
             // Get ink to generate the next paragraph
             var paragraphText = story.Continue();
-            submitUpdate("paragraph", paragraphText);
+            // submitUpdate("paragraph", paragraphText);
             var tags = story.currentTags;
             
             // Any special tags included with this line
@@ -306,7 +312,7 @@
                     currentPlayer = playerNum + 1;
                     if(currentPlayer > totalPlayers)
                         currentPlayer = 1;
-                    submitUpdate("advance", "", currentPlayer);
+                    // submitUpdate("advance", "", currentPlayer);
                 }
             }
 
@@ -330,9 +336,9 @@
             // Create paragraph with anchor element
             var choiceParagraphElement = document.createElement('p');
             choiceParagraphElement.classList.add("choice");
-            submitUpdate("choice", choice.text);
+            // submitUpdate("choice", choice.text);
             choiceParagraphElement.innerHTML = `<a href='#'>${choice.text}</a>`
-            submitUpdate("choice", choice.text, choice.index);
+            // submitUpdate("choice", choice.text, choice.index);
             storyContainer.appendChild(choiceParagraphElement);
 
             // Fade choice in after a short delay
