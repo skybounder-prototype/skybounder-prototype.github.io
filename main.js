@@ -1,8 +1,12 @@
 (function(storyContent) {
         // Create ink story from the content using inkjs
     var story = new inkjs.Story(storyContent);
+    var storyContainer = document.querySelector('#story');
     var firstMessage = true;
-
+    var playerNum = 1;
+    var totalPlayers = 1;
+    var currentPlayer = 1;
+    var shouldHide = false;
 
     // start pubnub
 
@@ -21,18 +25,119 @@
         uuid: clientUUID
     });
 
+    submitUpdate("joinRequest", "");
+
     pubnub.addListener({
         message: function(event) {
             // displayMessage('[MESSAGE: received]', event.message.entry + ': ' + event.message.update);
-            if(firstMessage) {
-                firstMessage = false;
-            } else {
-                // Don't follow <a> link
-                // event.preventDefault();
+            // Don't follow <a> link
+            // event.preventDefault();
 
-                var choiceIndex = parseInt(event.message.update);
+            if(event.message.type == "paragraph") {
+
+                if(playerNum == 1) return;
+
+                var paragraphIndex = 0;
+                var delay = 0.0;
+                
+                // Don't over-scroll past new content
+                var previousBottomEdge = firstMessage ? 0 : contentBottomEdgeY();
+                firstMessage = false;
+
+                // Get ink to generate the next paragraph
+                var paragraphText = event.message.text;
+                var tags = story.currentTags;
+                
+                // Any special tags included with this line
+                var customClasses = [];
+                for(var i=0; i<tags.length; i++) {
+                    var tag = tags[i];
+
+                    // Detect tags of the form "X: Y". Currently used for IMAGE and CLASS but could be
+                    // customised to be used for other things too.
+                    var splitTag = splitPropertyTag(tag);
+
+                    // IMAGE: src
+                    if( splitTag && splitTag.property == "IMAGE" ) {
+                        var imageElement = document.createElement('img');
+                        imageElement.src = splitTag.val;
+                        storyContainer.appendChild(imageElement);
+
+                        showAfter(delay, imageElement);
+                        delay += 200.0;
+                    }
+
+                    // CLASS: className
+                    else if( splitTag && splitTag.property == "CLASS" ) {
+                        customClasses.push(splitTag.val);
+                    }
+
+                    // CLEAR - removes all existing content.
+                    // RESTART - clears everything and restarts the story from the beginning
+                    else if( tag == "CLEAR" || tag == "RESTART" ) {
+                        removeAll("p");
+                        removeAll("img");
+                        
+                        // Comment out this line if you want to leave the header visible when clearing
+                        setVisible(".header", false);
+
+                        if( tag == "RESTART" ) {
+                            restart();
+                            return;
+                        }
+                    }
+
+                    else if( tag == "ADVANCE" && currentPlayer == playerNum ) {
+                        shouldHide = true;
+                        document.body.classList.add("hide");
+                        currentPlayer = playerNum + 1;
+                        if(currentPlayer > totalPlayers)
+                            currentPlayer = 1;
+                        submitUpdate("advance", "", currentPlayer);
+                    }
+                }
+
+                // Create paragraph element (initially hidden)
+                var paragraphElement = document.createElement('p');
+                paragraphElement.innerHTML = paragraphText;
+                storyContainer.appendChild(paragraphElement);
+                
+                // Add any custom classes derived from ink tags
+                for(var i=0; i<customClasses.length; i++)
+                    paragraphElement.classList.add(customClasses[i]);
+
+                // Fade in paragraph after a short delay
+                showAfter(delay, paragraphElement);
+                delay += 200.0;
+
+            } else if(event.message.type == "choice") {
+                if(playerNum == 1) return;
+
+                // Create paragraph with anchor element
+                var choiceParagraphElement = document.createElement('p');
+                choiceParagraphElement.classList.add("choice");
+                choiceParagraphElement.innerHTML = `<a href='#'>${event.message.text}</a>`
+                storyContainer.appendChild(choiceParagraphElement);
+
+                // Fade choice in after a short delay
+                showAfter(delay, choiceParagraphElement);
+                delay += 200.0;
+
+                // Click on choice
+                var choiceAnchorEl = choiceParagraphElement.querySelectorAll("a")[0];
+                choiceAnchorEl.addEventListener("click", function(event) {
+                    // Remove all existing choices
+                    removeAll("p.choice");
+
+                    submitUpdate("choiceIndex", "", event.message.index);
+                }
+
+            } else if(event.message.type == "choiceIndex") {
+
+                if(playerNum != 1) return;
+
+                var choiceIndex = event.message.index;
                 if(choiceIndex >= 0) {
-                    displayMessage("AH", choiceIndex);
                     // Remove all existing choices
                     removeAll("p.choice");
 
@@ -42,6 +147,28 @@
                     // Aaand loop
                     continueStory();
                  }
+
+            } else if(event.message.type == "joinRequest") {
+
+                if(playerIndex == 1) {
+                    totalPlayers++;
+                    submitUpdate("joinResponse", "", totalPlayers);
+                }
+
+            } else if(event.message.type == "joinResponse") {
+                playerNum = event.message.index;
+                totalPlayers = playerNum;
+                displayMessage("WELCOME", "Welcome player " + playerNum + ".")
+                shouldHide = true;
+                document.body.classList.add("hide");
+
+            } else if(event.message.type == "advance") {
+
+                currentPlayer = event.message.index;
+                if(currentPlayer == playerNum) {
+                    shouldHide = false;
+                    document.body.classList.remove("hide");
+                }
             }
         },
         presence: function(event) {
@@ -61,25 +188,16 @@
         withPresence: true
     });
 
-    submitUpdate = function(anEntry, choiceIndex) {
+    submitUpdate = function(type, text, index) {
         pubnub.publish({
             channel : theChannel,
-            message : {'entry' : anEntry, 'update' : choiceIndex}
+            message : {'type' : type, 'text' : text, 'index' : index}
         },
         function(status, response) {
             if (status.error) {
                 console.log(status)
             }
             else {
-                // if(uuid != clientUUID) {
-                    // if(uuid != clientUUID) {
-                    //     displayMessage('[PUBLISH: sent] from other', 'timetoken: ' + response.timetoken);
-                    // } else {
-                    //     displayMessage('[PUBLISH: sent] from this', 'timetoken: ' + response.timetoken);
-                    // }
-                    // story = updatedStory;
-                    // continueStory();
-                // }
             }
         });
     };
@@ -119,7 +237,6 @@
         }
     }
 
-    var storyContainer = document.querySelector('#story');
     var outerScrollContainer = document.querySelector('.outerContainer');
 
     // Kick off the start of the story!
@@ -128,6 +245,7 @@
     // Main story processing function. Each time this is called it generates
     // all the next content up as far as the next set of choices.
     function continueStory(firstTime) {
+        if(playerNum != 1) return;
 
         var paragraphIndex = 0;
         var delay = 0.0;
@@ -140,6 +258,7 @@
 
             // Get ink to generate the next paragraph
             var paragraphText = story.Continue();
+            submitUpdate("paragraph", paragraphText);
             var tags = story.currentTags;
             
             // Any special tags included with this line
@@ -180,6 +299,15 @@
                         return;
                     }
                 }
+
+                else if( tag == "ADVANCE" && currentPlayer == playerNum ) {
+                    shouldHide = true;
+                    document.body.classList.add("hide");
+                    currentPlayer = playerNum + 1;
+                    if(currentPlayer > totalPlayers)
+                        currentPlayer = 1;
+                    submitUpdate("advance", "", currentPlayer);
+                }
             }
 
             // Create paragraph element (initially hidden)
@@ -202,7 +330,9 @@
             // Create paragraph with anchor element
             var choiceParagraphElement = document.createElement('p');
             choiceParagraphElement.classList.add("choice");
+            submitUpdate("choice", choice.text);
             choiceParagraphElement.innerHTML = `<a href='#'>${choice.text}</a>`
+            submitUpdate("choice", choice.text, choice.index);
             storyContainer.appendChild(choiceParagraphElement);
 
             // Fade choice in after a short delay
@@ -211,21 +341,19 @@
 
             // Click on choice
             var choiceAnchorEl = choiceParagraphElement.querySelectorAll("a")[0];
+
             choiceAnchorEl.addEventListener("click", function(event) {
+                // Don't follow <a> link
+                event.preventDefault();
 
-                submitUpdate(theEntry, choice.index);
+                // Remove all existing choices
+                removeAll("p.choice");
 
-                // // Don't follow <a> link
-                // event.preventDefault();
+                // Tell the story where to go next
+                story.ChooseChoiceIndex(choice.index);
 
-                // // Remove all existing choices
-                // removeAll("p.choice");
-
-                // // Tell the story where to go next
-                // story.ChooseChoiceIndex(choice.index);
-
-                // // Aaand loop
-                // continueStory();
+                // Aaand loop
+                continueStory();
             });
         });
 
