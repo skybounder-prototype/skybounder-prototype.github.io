@@ -34,11 +34,11 @@
 
             if(event.message.type == "passGameToPlayer" && event.message.index == playerNum) {
 
-                submit("requestParagraph", "", playerNum);
+                submitUpdate("requestParagraph", "", playerNum);
 
             } else if(event.message.type == "requestParagraph" && isHost) {
 
-                submit("receiveParagraph", story.Continue(), event.message.index);
+                submitUpdate("receiveParagraph", story.Continue(), event.message.index);
 
             } else if(event.message.type == "receiveParagraph" && event.message.index == playerNum) {
 
