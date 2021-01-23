@@ -5,9 +5,9 @@
     var firstMessage = true;
     var playerNum = 1;
     var totalPlayers = 1;
-    var currentPlayer = 1;
     var shouldHide = false;
     var isConnected = false;
+    var isHost = false;
 
     // start pubnub
 
@@ -32,9 +32,15 @@
             // Don't follow <a> link
             // event.preventDefault();
 
-            if(event.message.type == "paragraph") {
+            if(event.message.type == "passGameToPlayer" && event.message.index == playerNum) {
 
-                if(playerNum == 1) return;
+                submit("requestParagraph", "", playerNum);
+
+            } else if(event.message.type == "requestParagraph" && isHost) {
+
+                submit("receiveParagraph", story.Continue(), event.message.index);
+
+            } else if(event.message.type == "receiveParagraph" && event.message.index == playerNum) {
 
                 var paragraphIndex = 0;
                 var delay = 0.0;
@@ -56,43 +62,16 @@
                     // customised to be used for other things too.
                     var splitTag = splitPropertyTag(tag);
 
-                    // IMAGE: src
-                    if( splitTag && splitTag.property == "IMAGE" ) {
-                        var imageElement = document.createElement('img');
-                        imageElement.src = splitTag.val;
-                        storyContainer.appendChild(imageElement);
-
-                        showAfter(delay, imageElement);
-                        delay += 200.0;
-                    }
-
-                    // CLASS: className
-                    else if( splitTag && splitTag.property == "CLASS" ) {
-                        customClasses.push(splitTag.val);
-                    }
-
-                    // CLEAR - removes all existing content.
-                    // RESTART - clears everything and restarts the story from the beginning
-                    else if( tag == "CLEAR" || tag == "RESTART" ) {
-                        removeAll("p");
-                        removeAll("img");
-                        
-                        // Comment out this line if you want to leave the header visible when clearing
-                        setVisible(".header", false);
-
-                        if( tag == "RESTART" ) {
-                            restart();
-                            return;
+                    else if( tag == "ADVANCE" ) {
+                        removeAll("p")
+                        var nextPlayer = playerNum + 1;
+                        if(nextPlayer > totalPlayers) {
+                            nextPlayer = 1;
                         }
-                    }
 
-                    else if( tag == "ADVANCE" && currentPlayer == playerNum ) {
-                        shouldHide = true;
-                        document.body.classList.add("hide");
-                        currentPlayer = playerNum + 1;
-                        if(currentPlayer > totalPlayers)
-                            currentPlayer = 1;
-                        submitUpdate("advance", "", currentPlayer);
+                        submitUpdate("passGameToPlayer", "", nextPlayer);
+                        
+                        return;
                     }
                 }
 
@@ -109,8 +88,15 @@
                 showAfter(delay, paragraphElement);
                 delay += 200.0;
 
-            } else if(event.message.type == "choice") {
-                if(playerNum == 1) return;
+                submitUpdate("requestChoices", "", playerNum);
+
+            } else if(event.message.type == "requestChoices" && isHost) {
+
+                story.currentChoices.forEach(function(choice) {
+                    submitUpdate("receiveChoice", choice.text, event.message.index);
+                });
+
+            } else if(event.message.type == "receiveChoice" && event.message.index == playerNum) {
 
                 var delay = 0.0
                 // Create paragraph with anchor element
@@ -126,15 +112,27 @@
                 // Click on choice
                 var choiceAnchorEl = choiceParagraphElement.querySelectorAll("a")[0];
                 choiceAnchorEl.addEventListener("click", function(event) {
-                    // Remove all existing choices
-                    removeAll("p.choice");
 
-                    submitUpdate("choiceIndex", "", event.message.index);
+                    submitUpdate("selectChoice", "", event.message.index);
+
                 });
 
-            } else if(event.message.type == "choiceIndex") {
+            } else if(event.message.type == "selectChoice" && isHost) {
 
-                if(playerNum != 1) return;
+                var choiceIndex = event.message.index;
+                if(choiceIndex >= 0) {
+                    // Tell the story where to go next
+                    story.ChooseChoiceIndex(choiceIndex);
+
+                    submitUpdate("madeChoice", "", event.message.index);
+                 }
+
+            } else if(event.message.type == "selectChoice" && event.message.index == playerNum) {
+
+                removeAll("p.choice");
+                submitUpdate("requestParagraph", "", event.message.index);
+
+            } else if(event.message.type == "receiveChoiceSelection" && isHost) {
 
                 var choiceIndex = event.message.index;
                 if(choiceIndex >= 0) {
@@ -161,7 +159,6 @@
                     playerNum = event.message.index;
                     totalPlayers = playerNum;
                     shouldHide = true;
-                    setVisible("p", false);
                     submitUpdate("welcome", "Welcome player " + playerNum + ".", clientUUID);
                 }
                 isConnected = true;
@@ -171,8 +168,8 @@
                 currentPlayer = event.message.index;
                 if(currentPlayer == playerNum) {
                     shouldHide = false;
-                    setVisible("p", true);
                 }
+
             } else if(event.message.type == "welcome") {
 
                 if(clientUUID != event.message.index) {
@@ -222,8 +219,6 @@
         pmessage.appendChild(document.createTextNode(aMessage));
     }
 
-    submitUpdate('joinRequest', clientUUID, clientUUID);
-
     // end pubnub
 
     // Global tags - those at the top of the ink file
@@ -271,7 +266,6 @@
 
             // Get ink to generate the next paragraph
             var paragraphText = story.Continue();
-            // submitUpdate("paragraph", paragraphText);
             var tags = story.currentTags;
             
             // Any special tags included with this line
@@ -366,7 +360,13 @@
                 story.ChooseChoiceIndex(choice.index);
 
                 // Aaand loop
-                continueStory();
+                if(choice.text == "Join") {
+                    submitUpdate('joinRequest', clientUUID, clientUUID);
+                    removeAll("p");
+                } else {
+                    submitUpdate("requestParagraph", "", playerNum);
+                    isHost = true;
+                }
             });
         });
 
