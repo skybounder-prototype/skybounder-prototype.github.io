@@ -158,11 +158,10 @@
             } else if(event.message.type == "joinResponse") {
                 if(clientUUID != event.message.text)
                 {
-                    displayMessage("ID", event.message.text + " my: " + clientUUID);
                     playerNum = event.message.index;
                     totalPlayers = playerNum;
                     shouldHide = true;
-                    document.body.classList.add("hide");
+                    setVisible(".outerContainer", false);
                     submitUpdate("welcome", "Welcome player " + playerNum + ".", clientUUID);
                 }
                 isConnected = true;
@@ -172,7 +171,7 @@
                 currentPlayer = event.message.index;
                 if(currentPlayer == playerNum) {
                     shouldHide = false;
-                    document.body.classList.remove("hide");
+                    setVisible(".outerContainer", true);
                 }
             } else if(event.message.type == "welcome") {
 
