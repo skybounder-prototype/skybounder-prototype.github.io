@@ -336,7 +336,7 @@
                 if(choice.text == "Join") {
                     submitUpdate('joinRequest', clientUUID, clientUUID);
                     removeAll("p");
-                } else {
+                } else if(choice.text == "Host") {
                     continueStory();
                     isHost = true;
                 }
