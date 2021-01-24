@@ -10,6 +10,9 @@
     var isHost = false;
     var delay = 0.0;
 
+    var outerScrollContainer = document.querySelector('.outerContainer');
+    var storyContainer = document.querySelector('#story');
+
     // start pubnub
 
     const messagesTop = document.getElementById('messages-top');
@@ -73,19 +76,19 @@
                     // customised to be used for other things too.
                     var splitTag = splitPropertyTag(tag);
 
-                    displayMessage("TAG", tag);
+                    // displayMessage("TAG", tag);
 
-                    if( tag == "ADVANCE" ) {
-                        removeAll("p");
-                        var nextPlayer = playerNum + 1;
-                        if(nextPlayer > totalPlayers) {
-                            nextPlayer = 1;
-                        }
+                    // if( splitTag[0] == "ADVANCE" ) {
+                    //     removeAll("p");
+                    //     var nextPlayer = playerNum + 1;
+                    //     if(nextPlayer > totalPlayers) {
+                    //         nextPlayer = 1;
+                    //     }
 
-                        submitUpdate("receiveParagraph", paragraphText, nextPlayer);
+                    //     submitUpdate("receiveParagraph", paragraphText, nextPlayer);
                         
-                        return;
-                    }
+                    //     return;
+                    // }
                 }
 
                 // Create paragraph element (initially hidden)
@@ -266,9 +269,6 @@
             }
         }
     }
-
-    var outerScrollContainer = document.querySelector('.outerContainer');
-    var storyContainer = document.querySelector('#story');
 
     // Kick off the start of the story!
     continueStory(true);
