@@ -40,6 +40,14 @@
 
                 submitUpdate("receiveParagraph", story.Continue(), event.message.index);
 
+            } else if(event.message.type == "continueIfCan" && isHost) {
+                if(story.canContinue())
+                {
+                    submitUpdate("receiveParagraph", story.Continue(), event.message.index);
+                } else {
+                    submitUpdate("requestChoices", "", playerNum);
+                }
+
             } else if(event.message.type == "receiveParagraph" && event.message.index == playerNum) {
 
                 var paragraphIndex = 0;
@@ -48,6 +56,7 @@
                 // Don't over-scroll past new content
                 var previousBottomEdge = firstMessage ? 0 : contentBottomEdgeY();
                 firstMessage = false;
+
 
                 // Get ink to generate the next paragraph
                 var paragraphText = event.message.text;
@@ -90,7 +99,7 @@
                 showAfter(delay, paragraphElement);
                 delay += 200.0;
 
-                submitUpdate("requestChoices", "", playerNum);
+                submitUpdate("continueIfCan", "", playerNum);
 
             } else if(event.message.type == "requestChoices" && isHost) {
 
