@@ -12,6 +12,7 @@
 
     var outerScrollContainer = document.querySelector('.outerContainer');
     var storyContainer = document.querySelector('#story');
+    var previousBottomEdge = 0;
 
     // start pubnub
 
@@ -59,7 +60,7 @@
                 var paragraphIndex = 0;
                 
                 // Don't over-scroll past new content
-                var previousBottomEdge = firstMessage ? 0 : contentBottomEdgeY();
+                var previousBottomEdge = contentBottomEdgeY();
                 firstMessage = false;
 
 
