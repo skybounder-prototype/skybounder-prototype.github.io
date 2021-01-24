@@ -8,6 +8,7 @@
     var shouldHide = false;
     var isConnected = false;
     var isHost = false;
+    var delay = 0.0;
 
     // start pubnub
 
@@ -41,7 +42,7 @@
                 submitUpdate("receiveParagraph", story.Continue(), event.message.index);
 
             } else if(event.message.type == "continueIfCan" && isHost) {
-                if(story.canContinue())
+                if(story.canContinue)
                 {
                     submitUpdate("receiveParagraph", story.Continue(), event.message.index);
                 } else {
@@ -53,7 +54,6 @@
             } else if(event.message.type == "receiveParagraph" && event.message.index == playerNum) {
 
                 var paragraphIndex = 0;
-                var delay = 0.0;
                 
                 // Don't over-scroll past new content
                 var previousBottomEdge = firstMessage ? 0 : contentBottomEdgeY();
@@ -76,7 +76,7 @@
                     displayMessage("TAG", tag);
 
                     if( tag == "ADVANCE" ) {
-                        removeAll("p")
+                        removeAll("p");
                         var nextPlayer = playerNum + 1;
                         if(nextPlayer > totalPlayers) {
                             nextPlayer = 1;
@@ -111,7 +111,7 @@
 
             } else if(event.message.type == "receiveChoice" && event.message.index == playerNum) {
 
-                var delay = 0.0
+                delay = 0.0
                 // Create paragraph with anchor element
                 var choiceSplit = event.message.text.split(":");
                 var choiceText = choiceSplit[0];
@@ -130,9 +130,36 @@
 
                 choiceAnchorEl.addEventListener("click", function(event) {
 
-                    submitUpdate("selectChoice", choiceIndex, playerNum);
+                    event.preventDefault();
+
+                    if(choiceText.includes("Begin")) {
+                        removeAll("p");
+                        submitUpdate("selectChoiceAndAdvance", choiceIndex, playerNum);
+                    } else {
+                        submitUpdate("selectChoice", choiceIndex, playerNum);
+                    }
 
                 });
+
+                storyContainer.style.height = contentBottomEdgeY()+"px";
+
+                if( !firstMessage )
+                    scrollDown(previousBottomEdge);
+
+            } else if(event.message.type == "selectChoiceAndAdvance" && isHost) {
+
+                var choiceIndex = event.message.text;
+                if(choiceIndex >= 0) {
+                    // Tell the story where to go next
+                    story.ChooseChoiceIndex(choiceIndex);
+
+                    var nextPlayer = event.message.index + 1;
+                    if(nextPlayer > totalPlayers) {
+                        nextPlayer = 1;
+                    }
+
+                    submitUpdate("madeChoice", "", nextPlayer);
+                 }
 
             } else if(event.message.type == "selectChoice" && isHost) {
 
