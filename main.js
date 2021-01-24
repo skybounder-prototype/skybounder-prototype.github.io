@@ -95,16 +95,19 @@
             } else if(event.message.type == "requestChoices" && isHost) {
 
                 story.currentChoices.forEach(function(choice) {
-                    submitUpdate("receiveChoice", choice.text, event.message.index);
+                    submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index);
                 });
 
             } else if(event.message.type == "receiveChoice" && event.message.index == playerNum) {
 
                 var delay = 0.0
                 // Create paragraph with anchor element
+                var choiceSplit = event.message.text.split(":");
+                var choiceText = choiceSplit[0];
+                var choiceIndex = choiceSplit[1];
                 var choiceParagraphElement = document.createElement('p');
                 choiceParagraphElement.classList.add("choice");
-                choiceParagraphElement.innerHTML = `<a href='#'>${event.message.text}</a>`
+                choiceParagraphElement.innerHTML = `<a href='#'>${choiceText}</a>`
                 storyContainer.appendChild(choiceParagraphElement);
 
                 // Fade choice in after a short delay
@@ -116,13 +119,13 @@
 
                 choiceAnchorEl.addEventListener("click", function(event) {
 
-                    submitUpdate("selectChoice", "", playerNum);
+                    submitUpdate("selectChoice", choiceIndex, playerNum);
 
                 });
 
             } else if(event.message.type == "selectChoice" && isHost) {
 
-                var choiceIndex = event.message.index;
+                var choiceIndex = event.message.text;
                 if(choiceIndex >= 0) {
                     // Tell the story where to go next
                     story.ChooseChoiceIndex(choiceIndex);
