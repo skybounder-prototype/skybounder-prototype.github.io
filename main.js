@@ -45,7 +45,9 @@
                 {
                     submitUpdate("receiveParagraph", story.Continue(), event.message.index);
                 } else {
-                    submitUpdate("requestChoices", "", playerNum);
+                    story.currentChoices.forEach(function(choice) {
+                        submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index);
+                    });
                 }
 
             } else if(event.message.type == "receiveParagraph" && event.message.index == playerNum) {
