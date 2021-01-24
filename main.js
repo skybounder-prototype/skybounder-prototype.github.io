@@ -60,7 +60,7 @@
                 var paragraphIndex = 0;
                 
                 // Don't over-scroll past new content
-                var previousBottomEdge = contentBottomEdgeY();
+                previousBottomEdge = contentBottomEdgeY();
                 firstMessage = false;
 
 
