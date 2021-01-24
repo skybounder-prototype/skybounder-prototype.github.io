@@ -41,8 +41,7 @@
                 submitUpdate("receiveParagraph", story.Continue(), event.message.index);
 
             } else if(event.message.type == "receiveParagraph" && event.message.index == playerNum) {
-                if(event.message.text == "host" && !isHost) return;
-
+                
                 var paragraphIndex = 0;
                 var delay = 0.0;
                 
