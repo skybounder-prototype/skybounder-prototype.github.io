@@ -41,7 +41,7 @@
                 submitUpdate("receiveParagraph", story.Continue(), event.message.index);
 
             } else if(event.message.type == "receiveParagraph" && event.message.index == playerNum) {
-                
+
                 var paragraphIndex = 0;
                 var delay = 0.0;
                 
@@ -113,9 +113,10 @@
 
                 // Click on choice
                 var choiceAnchorEl = choiceParagraphElement.querySelectorAll("a")[0];
+
                 choiceAnchorEl.addEventListener("click", function(event) {
 
-                    submitUpdate("selectChoice", "", event.message.index);
+                    submitUpdate("selectChoice", "", playerNum);
 
                 });
 
