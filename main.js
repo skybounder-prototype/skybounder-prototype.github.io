@@ -146,8 +146,7 @@
 
                 storyContainer.style.height = contentBottomEdgeY()+"px";
 
-                if( !firstMessage )
-                    scrollDown(previousBottomEdge);
+                scrollDown(previousBottomEdge);
 
             } else if(event.message.type == "selectChoiceAndAdvance" && isHost) {
 
