@@ -212,8 +212,9 @@
                    password == event.message.password) { // the password is correct
                     totalPlayers++;
                     clientIDs.push(event.message.index);
+                    submitUpdate("welcome", "Welcome player " + totalPlayers + ".", clientUUID, password);
                     for(let i = 0; i < clientIDs.length; i++) {
-                        submitUpdate("joinResponse-setID", "", clientUUID, event.message.password);
+                        submitUpdate("joinResponse-setID", "", clientIDs[i], event.message.password);
                     }
                 }
 
@@ -227,8 +228,7 @@
                     !isHost) { // for guest
                     playerNum = totalPlayers;
                     totalPlayers++;
-                    removeAll("input");
-                    submitUpdate("welcome", "Welcome player " + playerNum + ".", clientUUID, password);
+                    displayMessage("ONCE", "once?");
                 }
 
             } 
