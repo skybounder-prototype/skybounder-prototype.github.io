@@ -3,10 +3,10 @@
     var story = new inkjs.Story(storyContent);
 
     var firstMessage = true;
+    var password = "sakhfg3467dalk43sbfekb;das";
+    var clientIDs = [];
     var playerNum = 1;
     var totalPlayers = 1;
-    var shouldHide = false;
-    var isConnected = false;
     var isHost = false;
     var delay = 0.0;
 
@@ -17,12 +17,20 @@
     // start pubnub
 
     const messagesTop = document.getElementById('messages-top');
-    // const sendButton = document.getElementById('publish-button');
-    // sendButton.addEventListener('click', () => {submitUpdate(theEntry, "-1")});
+    const hostButton = document.getElementById('host-button');
+    const joinBUtton = document.getElementById('join-button');
+    hostButton.addEventListener('click', () => {
+        isHost = true;
+        setPassword(document.getElementById('password').value);
+    });
+    joinButton.addEventListener('click', () => {
+        setPassword(document.getElementById('password').value);
+        submitUpdate("joinRequest", "", clientUUID, document.getElementById('password').value);
+    });
 
     const clientUUID = PubNub.generateUUID();
     const theChannel = 'Skybounder';
-    const theEntry = 'Update';
+    clientIDs.push(clientUUID);
 
     const pubnub = new PubNub({
         // replace the following with your own publish and subscribe keys
@@ -33,19 +41,20 @@
 
     pubnub.addListener({
         message: function(event) {
-            // displayMessage('[MESSAGE: received]', event.message.entry + ': ' + event.message.update);
-            // Don't follow <a> link
-            // event.preventDefault();
-
+            
             if(event.message.type == "passGameToPlayer" && event.message.index == playerNum) {
 
                 submitUpdate("requestParagraph", "", playerNum);
 
-            } else if(event.message.type == "requestParagraph" && isHost) {
+            } 
+
+            else if(event.message.type == "requestParagraph" && isHost) {
 
                 submitUpdate("receiveParagraph", story.Continue(), event.message.index);
 
-            } else if(event.message.type == "continueIfCan" && isHost) {
+            } 
+
+            else if(event.message.type == "continueIfCan" && isHost) {
                 if(story.canContinue)
                 {
                     submitUpdate("receiveParagraph", story.Continue(), event.message.index);
@@ -55,7 +64,9 @@
                     });
                 }
 
-            } else if(event.message.type == "receiveParagraph" && event.message.index == playerNum) {
+            } 
+
+            else if(event.message.type == "receiveParagraph" && event.message.index == playerNum) {
 
                 var paragraphIndex = 0;
                 
@@ -107,13 +118,17 @@
 
                 submitUpdate("continueIfCan", "", playerNum);
 
-            } else if(event.message.type == "requestChoices" && isHost) {
+            } 
+
+            else if(event.message.type == "requestChoices" && isHost) {
 
                 story.currentChoices.forEach(function(choice) {
                     submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index);
                 });
 
-            } else if(event.message.type == "receiveChoice" && event.message.index == playerNum) {
+            } 
+
+            else if(event.message.type == "receiveChoice" && event.message.index == playerNum) {
 
                 delay = 0.0
                 // Create paragraph with anchor element
@@ -149,7 +164,9 @@
 
                 scrollDown(previousBottomEdge);
 
-            } else if(event.message.type == "selectChoiceAndAdvance" && isHost) {
+            } 
+
+            else if(event.message.type == "selectChoiceAndAdvance" && isHost) {
 
                 var choiceIndex = event.message.text;
                 if(choiceIndex >= 0) {
@@ -164,7 +181,9 @@
                     submitUpdate("madeChoice", "", nextPlayer);
                  }
 
-            } else if(event.message.type == "selectChoice" && isHost) {
+            } 
+
+            else if(event.message.type == "selectChoice" && isHost) {
 
                 var choiceIndex = event.message.text;
                 if(choiceIndex >= 0) {
@@ -174,33 +193,44 @@
                     submitUpdate("madeChoice", "", event.message.index);
                  }
 
-            } else if(event.message.type == "madeChoice" && event.message.index == playerNum) {
+            } 
+
+            else if(event.message.type == "madeChoice" && event.message.index == playerNum) {
 
                 removeAll("p.choice");
                 submitUpdate("requestParagraph", "", event.message.index);
 
-            } else if(event.message.type == "joinRequest") {
+            } 
 
-                if(playerNum == 1 && !isConnected && clientUUID != event.message.text) {
+            else if(event.message.type == "joinRequest") {
+
+                if(clientUUID != event.message.index && // the sender is not the same as the receiver
+                   !clientIDs.includes(event.message.index) && // the sender has not joined the receiver
+                   password == event.message.password) { // the password is correct
                     totalPlayers++;
-                    submitUpdate("joinResponse", event.message.text, totalPlayers);
+                    clientIDs.push(event.message.index);
+                    for(let i = 0; i < clientIDs.length; i++) {
+                        submitUpdate("joinResponse-setID", "", clientUUID, event.message.password);
+                    }
                 }
 
-            } else if(event.message.type == "joinResponse") {
-                if(clientUUID != event.message.text)
-                {
-                    playerNum = event.message.index;
-                    totalPlayers = playerNum;
-                    shouldHide = true;
-                    submitUpdate("welcome", "Welcome player " + playerNum + ".", clientUUID);
-                }
-                isConnected = true;
+            } 
 
-            } else if(event.message.type == "welcome") {
-
-                if(clientUUID != event.message.index) {
-                    displayMessage("WELCOME", event.message.text);
+            else if(event.message.type == "joinResponse-setID") {
+                
+                if(clientUUID != event.message.index && 
+                    password == event.message.password) {
+                    playerNum = totalPlayers;
+                    totalPlayers++;
+                    submitUpdate("welcome", "Welcome player " + playerNum + ".", clientUUID, password);
                 }
+
+            } 
+
+            else if(event.message.type == "welcome" &&
+                    password == event.message.password) {
+
+                    displayMessage("", event.message.text);
 
             }
         },
@@ -221,10 +251,15 @@
         withPresence: true
     });
 
+    setPassword = function(text) {
+        password = text;
+        displayMessage("Password Set", "Password was set to " + text + ".");
+    }
+
     submitUpdate = function(type, text, index) {
         pubnub.publish({
             channel : theChannel,
-            message : {'type' : type, 'text' : text, 'index' : index}
+            message : {'type' : type, 'text' : text, 'index' : index, 'password' : password}
         },
         function(status, response) {
             if (status.error) {
