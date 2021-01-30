@@ -209,7 +209,8 @@
 
                 if(clientUUID != event.message.index && // the sender is not the same as the receiver
                    !clientIDs.includes(event.message.index) && // the sender has not joined the receiver
-                   password == event.message.password) { // the password is correct
+                   password == event.message.password &&
+                   isHost) { // the password is correct
                     totalPlayers++;
                     clientIDs.push(event.message.index);
                     submitUpdate("welcome", "Welcome player " + totalPlayers + ".", clientUUID, password);
