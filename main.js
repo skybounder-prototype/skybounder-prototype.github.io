@@ -204,6 +204,7 @@
 
             } 
 
+            // HOST FUNC
             else if(event.message.type == "joinRequest") {
 
                 if(clientUUID != event.message.index && // the sender is not the same as the receiver
@@ -218,10 +219,12 @@
 
             } 
 
+            // GUEST FUNC
             else if(event.message.type == "joinResponse-setID") {
                 
                 if(clientUUID != event.message.index && 
-                    password == event.message.password) {
+                    password == event.message.password &&
+                    !isHost) { // for guest
                     playerNum = totalPlayers;
                     totalPlayers++;
                     removeAll("input");
