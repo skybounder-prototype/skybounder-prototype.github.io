@@ -18,10 +18,12 @@
 
     const messagesTop = document.getElementById('messages-top');
     const hostButton = document.getElementById('host-button');
-    const joinBUtton = document.getElementById('join-button');
+    const joinButton = document.getElementById('join-button');
     hostButton.addEventListener('click', () => {
         isHost = true;
         setPassword(document.getElementById('password').value);
+        removeAll("input");
+        submitUpdate("newGame", "", clientUUID, "");
     });
     joinButton.addEventListener('click', () => {
         setPassword(document.getElementById('password').value);
@@ -222,6 +224,7 @@
                     password == event.message.password) {
                     playerNum = totalPlayers;
                     totalPlayers++;
+                    removeAll("input");
                     submitUpdate("welcome", "Welcome player " + playerNum + ".", clientUUID, password);
                 }
 
@@ -231,6 +234,12 @@
                     password == event.message.password) {
 
                     displayMessage("", event.message.text);
+
+            }
+
+            else if(event.message.type == "newGame") {
+
+                displayMessage("Game Created", "Host " + event.message.index + " started a new game.");
 
             }
         },
@@ -278,7 +287,7 @@
         pmessage.appendChild(document.createTextNode(messageType));
         pmessage.appendChild(br);
         pmessage.appendChild(document.createTextNode(aMessage));
-    }
+    };
 
     // end pubnub
 
