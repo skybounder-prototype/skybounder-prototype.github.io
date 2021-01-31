@@ -23,15 +23,16 @@
     hostButton.addEventListener('click', () => {
         isHost = true;
         setPassword(document.getElementById('password').value);
+        submitUpdate("newGame", document.getElementById('name').value, clientUUID, "");
         removeConnectivityInputFields();
-        submitUpdate("newGame", "", clientUUID, "");
     });
     joinButton.addEventListener('click', () => {
         setPassword(document.getElementById('password').value);
-        submitUpdate("joinRequest", "", clientUUID, document.getElementById('password').value);
+        submitUpdate("joinRequest", document.getElementById('name').value, clientUUID, document.getElementById('password').value);
     });
 
     removeConnectivityInputFields = function() {
+        document.getElementById('name').remove();
         document.getElementById('password').remove();
         document.getElementById('host-button').remove();
         document.getElementById('join-button').remove();
@@ -97,29 +98,34 @@
                 // Get ink to generate the next paragraph
                 var paragraphText = event.message.text;
                 var tags = story.currentTags;
-                
+
                 // Any special tags included with this line
                 var customClasses = [];
                 for(var i=0; i<tags.length; i++) {
                     var tag = tags[i];
-
+                    
                     // Detect tags of the form "X: Y". Currently used for IMAGE and CLASS but could be
                     // customised to be used for other things too.
                     var splitTag = splitPropertyTag(tag);
 
-                    // displayMessage("TAG", tag);
-
-                    if( splitTag.property == "ADVANCE" ) {
-                        removeAll("p");
-                        var nextPlayer = playerNum + 1;
-                        if(nextPlayer > totalPlayers) {
-                            nextPlayer = 1;
-                        }
-
-                        submitUpdate("receiveParagraph", paragraphText, nextPlayer, password);
-                        
-                        return;
+                    if(splitTag.property == "IMAGE") {
+                        var img = document.createElement("img");
+                        img.src = splitTag.val;
+                        storyContainer.appendChild(img);
                     }
+
+                    // if( splitTag.property == "ADVANCE" ) {
+                    //     removeAll("p");
+                    //     var nextPlayer = playerNum + 1;
+                    //     displayMessage("PLAYER", nextPlayer + "'s turn.");
+                    //     if(nextPlayer > totalPlayers) {
+                    //         nextPlayer = 1;
+                    //     }
+
+                    //     submitUpdate("receiveParagraphAfterAdvancing", paragraphText, nextPlayer, password);
+                        
+                    //     return;
+                    // }
                 }
 
                 // Create paragraph element (initially hidden)
@@ -137,7 +143,7 @@
 
                 submitUpdate("continueIfCan", "", playerNum, password);
 
-            } 
+            }
 
             else if(event.message.type == "requestChoices" && isHost &&
                     event.message.password == password) {
@@ -172,8 +178,12 @@
 
                     event.preventDefault();
 
-                    submitUpdate("selectChoice", choiceIndex, playerNum, password);
-
+                    if(choiceText == "Begin") {
+                        submitUpdate("selectChoiceAndAdvance", choiceIndex, playerNum, password);
+                    } else {
+                        submitUpdate("selectChoice", choiceIndex, playerNum, password);
+                    }
+                    
                 });
 
                 storyContainer.style.height = contentBottomEdgeY()+"px";
@@ -193,6 +203,26 @@
                     submitUpdate("madeChoice", "", event.message.index, password);
                  }
 
+            }
+
+            else if(event.message.type == "selectChoiceAndAdvance" && isHost &&
+                    event.message.password == password) {
+
+                var choiceIndex = event.message.text;
+                if(choiceIndex >= 0) {
+                    // Tell the story where to go next
+                    story.ChooseChoiceIndex(choiceIndex);
+
+                    submitUpdate("removeAllContent", "", event.message.index, password);
+
+                    var nextPlayer = event.message.index + 1;
+                    if(nextPlayer > totalPlayers) {
+                        nextPlayer = 1;
+                    }
+
+                    submitUpdate("madeChoice", "", nextPlayer, password);
+                 }
+
             } 
 
             else if(event.message.type == "madeChoice" && event.message.index == playerNum &&
@@ -207,6 +237,7 @@
 
                 removeAll("p");
                 removeAll("p.choice");
+                removeMessageArea();
 
             }
 
@@ -219,7 +250,7 @@
                    isHost) { // the password is correct
                     totalPlayers++;
                     clientIDs.push(event.message.index);
-                    submitUpdate("welcome", "Welcome player " + totalPlayers + ".", clientUUID, password);
+                    submitUpdate("welcome", "Welcome " + event.message.text + ".", clientUUID, password);
                     submitUpdate("joinResponse-setID", totalPlayers, event.message.index, event.message.password);
                 }
 
@@ -234,7 +265,10 @@
                     playerNum = event.message.text;
                     totalPlayers = playerNum;
                     removeConnectivityInputFields();
-                } else if(password != event.message.password) {
+                    displayMessage("Waiting...", "Waiting for host to begin game.");
+                    removeAll('p');
+                    removeAll('p.choice');
+                } else if(clientUUID == event.message.index && password != event.message.password && !isHost) {
                     displayMessage("Error", "Failure to join. Check password and try again.")
                 }
 
@@ -251,7 +285,7 @@
             // GUEST AND HOST FUNC
             else if(event.message.type == "newGame") {
 
-                displayMessage("Game Created", "Host " + event.message.index + " started a new game.");
+                displayMessage("Game Created", "Host " + event.message.text + " started a new game.");
 
             }
         },
@@ -292,12 +326,19 @@
 
     displayMessage = function(messageType, aMessage) {
         let pmessage = document.createElement('p');
+        pmessage.setAttribute("class", "message");
         let br = document.createElement('br');
 
         messagesTop.after(pmessage);
         pmessage.appendChild(document.createTextNode(messageType));
         pmessage.appendChild(br);
         pmessage.appendChild(document.createTextNode(aMessage));
+    };
+
+    removeMessageArea = function() {
+        [].forEach.call(document.querySelectorAll('.message'), function (el) {
+            el.style.visibility = 'hidden';
+        });
     };
 
     // end pubnub
@@ -427,6 +468,7 @@
                     submitUpdate("requestParagraph", "host", playerNum, password);
                     for(let i = 1; i <= totalPlayers; i++) {
                         if(i != playerNum) {
+                            removeMessageArea();
                             submitUpdate("removeAllContent", "", i, password);
                         }
                     }
