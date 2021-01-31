@@ -6,6 +6,7 @@
     var password = "sakhfg3467dalk43sbfekb;das";
     var clientIDs = [];
     var playerNum = 1;
+    var characterRole = "";
     var totalPlayers = 1;
     var isHost = false;
     var delay = 0.0;
@@ -22,13 +23,19 @@
     hostButton.addEventListener('click', () => {
         isHost = true;
         setPassword(document.getElementById('password').value);
-        removeAll("input");
+        removeConnectivityInputFields();
         submitUpdate("newGame", "", clientUUID, "");
     });
     joinButton.addEventListener('click', () => {
         setPassword(document.getElementById('password').value);
         submitUpdate("joinRequest", "", clientUUID, document.getElementById('password').value);
     });
+
+    removeConnectivityInputFields = function() {
+        document.getElementById('password').remove();
+        document.getElementById('host-button').remove();
+        document.getElementById('join-button').remove();
+    };
 
     const clientUUID = PubNub.generateUUID();
     const theChannel = 'Skybounder';
@@ -44,19 +51,27 @@
     pubnub.addListener({
         message: function(event) {
             
-            if(event.message.type == "passGameToPlayer" && event.message.index == playerNum) {
+            // ANY PLAYER FUNC
+            if(event.message.type == "passGameToPlayer" && 
+               event.message.index == playerNum && 
+               event.message.password == password) {
 
                 submitUpdate("requestParagraph", "", playerNum);
 
             } 
 
-            else if(event.message.type == "requestParagraph" && isHost) {
+            // HOST FUNC
+            else if(event.message.type == "requestParagraph" && isHost &&
+                    event.message.password == password) {
 
                 submitUpdate("receiveParagraph", story.Continue(), event.message.index);
 
             } 
 
-            else if(event.message.type == "continueIfCan" && isHost) {
+            // HOST FUNC
+            else if(event.message.type == "continueIfCan" && isHost &&
+                    event.message.password == password) {
+
                 if(story.canContinue)
                 {
                     submitUpdate("receiveParagraph", story.Continue(), event.message.index);
@@ -68,7 +83,9 @@
 
             } 
 
-            else if(event.message.type == "receiveParagraph" && event.message.index == playerNum) {
+            // ANY PLAYER FUNC
+            else if(event.message.type == "receiveParagraph" && event.message.index == playerNum &&
+                    event.message.password == password) {
 
                 var paragraphIndex = 0;
                 
@@ -92,17 +109,17 @@
 
                     // displayMessage("TAG", tag);
 
-                    // if( splitTag[0] == "ADVANCE" ) {
-                    //     removeAll("p");
-                    //     var nextPlayer = playerNum + 1;
-                    //     if(nextPlayer > totalPlayers) {
-                    //         nextPlayer = 1;
-                    //     }
+                    if( splitTag.property == "ADVANCE" ) {
+                        removeAll("p");
+                        var nextPlayer = playerNum + 1;
+                        if(nextPlayer > totalPlayers) {
+                            nextPlayer = 1;
+                        }
 
-                    //     submitUpdate("receiveParagraph", paragraphText, nextPlayer);
+                        submitUpdate("receiveParagraph", paragraphText, nextPlayer);
                         
-                    //     return;
-                    // }
+                        return;
+                    }
                 }
 
                 // Create paragraph element (initially hidden)
@@ -122,7 +139,8 @@
 
             } 
 
-            else if(event.message.type == "requestChoices" && isHost) {
+            else if(event.message.type == "requestChoices" && isHost &&
+                    event.message.password == password) {
 
                 story.currentChoices.forEach(function(choice) {
                     submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index);
@@ -130,7 +148,8 @@
 
             } 
 
-            else if(event.message.type == "receiveChoice" && event.message.index == playerNum) {
+            else if(event.message.type == "receiveChoice" && event.message.index == playerNum &&
+                    event.message.password == password) {
 
                 delay = 0.0
                 // Create paragraph with anchor element
@@ -153,12 +172,7 @@
 
                     event.preventDefault();
 
-                    if(choiceText.includes("Begin")) {
-                        removeAll("p");
-                        submitUpdate("selectChoiceAndAdvance", choiceIndex, playerNum);
-                    } else {
-                        submitUpdate("selectChoice", choiceIndex, playerNum);
-                    }
+                    submitUpdate("selectChoice", choiceIndex, playerNum);
 
                 });
 
@@ -166,26 +180,10 @@
 
                 scrollDown(previousBottomEdge);
 
-            } 
+            }
 
-            else if(event.message.type == "selectChoiceAndAdvance" && isHost) {
-
-                var choiceIndex = event.message.text;
-                if(choiceIndex >= 0) {
-                    // Tell the story where to go next
-                    story.ChooseChoiceIndex(choiceIndex);
-
-                    var nextPlayer = event.message.index + 1;
-                    if(nextPlayer > totalPlayers) {
-                        nextPlayer = 1;
-                    }
-
-                    submitUpdate("madeChoice", "", nextPlayer);
-                 }
-
-            } 
-
-            else if(event.message.type == "selectChoice" && isHost) {
+            else if(event.message.type == "selectChoice" && isHost &&
+                    event.message.password == password) {
 
                 var choiceIndex = event.message.text;
                 if(choiceIndex >= 0) {
@@ -197,7 +195,8 @@
 
             } 
 
-            else if(event.message.type == "madeChoice" && event.message.index == playerNum) {
+            else if(event.message.type == "madeChoice" && event.message.index == playerNum &&
+                    event.message.password == password) {
 
                 removeAll("p.choice");
                 submitUpdate("requestParagraph", "", event.message.index);
@@ -229,11 +228,14 @@
                     !isHost) { // for guest
                     playerNum = totalPlayers;
                     totalPlayers++;
-                    displayMessage("ONCE", "once?");
+                    removeConnectivityInputFields();
+                } else {
+                    displayMessage("Error", "Failure to join. Check password and try again.")
                 }
 
             } 
 
+            // GUEST AND HOST FUNC
             else if(event.message.type == "welcome" &&
                     password == event.message.password) {
 
@@ -241,6 +243,7 @@
 
             }
 
+            // GUEST AND HOST FUNC
             else if(event.message.type == "newGame") {
 
                 displayMessage("Game Created", "Host " + event.message.index + " started a new game.");
@@ -266,7 +269,6 @@
 
     setPassword = function(text) {
         password = text;
-        displayMessage("Password Set", "Password was set to " + text + ".");
     }
 
     submitUpdate = function(type, text, index) {
@@ -418,21 +420,13 @@
                 // Remove all existing choices
                 removeAll("p.choice");
 
-                // Tell the story where to go next
-                story.ChooseChoiceIndex(choice.index);
-
-                // Aaand loop
-                if(choice.text == "Join") {
-                    submitUpdate('joinRequest', clientUUID, clientUUID);
-                    removeAll("p");
-                } else if(choice.text == "Host") {
-                    continueStory();
-                    isHost = true;
-                }
-
                 if(choice.text == "Begin Game") {
                     submitUpdate("requestParagraph", "host", playerNum);
+                    removeAll("p");
                 }
+
+                // Tell the story where to go next
+                story.ChooseChoiceIndex(choice.index);
             });
         });
 
