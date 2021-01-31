@@ -372,11 +372,10 @@
 
     setNextReader = function(currentPlayerNum) {
         nextReader = currentPlayerNum + 1;
-        if(currentPlayerNum > totalPlayers) {
+        console.log("total: " + totalPlayers);
+        if(nextReader > totalPlayers) {
             nextReader = 1;
         }
-
-        console.log(nextReader);
     };
 
     // end pubnub
