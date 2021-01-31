@@ -1,6 +1,9 @@
 (function(storyContent) {
         // Create ink story from the content using inkjs
     var story = new inkjs.Story(storyContent);
+    _inkStory.ObserveVariable ("current_player_num", (string varName, object newValue) => {
+        setNextReader(newValue);
+    });
 
     var firstMessage = true;
     var password = "sakhfg3467dalk43sbfekb;das";
@@ -13,6 +16,7 @@
     var pDelay = 0.0;
     var cDelay = 0.0;
     var iDelay = 0.0;
+    var nextReader = 1;
 
     var outerScrollContainer = document.querySelector('.outerContainer');
     var storyContainer = document.querySelector('#story');
@@ -240,12 +244,12 @@
 
                     submitUpdate("removeAllContent", "", event.message.index, password);
 
-                    var nextPlayer = event.message.index + 1;
-                    if(nextPlayer > totalPlayers) {
-                        nextPlayer = 1;
-                    }
+                    // var nextPlayer = event.message.index + 1;
+                    // if(nextPlayer > totalPlayers) {
+                    //     nextPlayer = 1;
+                    // }
 
-                    submitUpdate("madeChoice", "", nextPlayer, password);
+                    submitUpdate("madeChoice", "", nextReader, password);
                  }
 
             } 
@@ -364,6 +368,13 @@
         [].forEach.call(document.querySelectorAll('.message'), function (el) {
             el.style.visibility = 'hidden';
         });
+    };
+
+    setNextReader = function(currentPlayerNum) {
+        nextReader = currentPlayerNum + 1;
+        if(currentPlayerNum > totalPlayers) {
+            nextReader = 1;
+        }
     };
 
     // end pubnub
