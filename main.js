@@ -229,7 +229,7 @@
                     playerNum = totalPlayers;
                     totalPlayers++;
                     removeConnectivityInputFields();
-                } else {
+                } else if(password != event.message.password) {
                     displayMessage("Error", "Failure to join. Check password and try again.")
                 }
 
