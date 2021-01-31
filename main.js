@@ -10,6 +10,9 @@
     var totalPlayers = 1;
     var isHost = false;
     var delay = 0.0;
+    var pDelay = 0.0;
+    var cDelay = 0.0;
+    var iDelay = 0.0;
 
     var outerScrollContainer = document.querySelector('.outerContainer');
     var storyContainer = document.querySelector('#story');
@@ -109,9 +112,13 @@
                     var splitTag = splitPropertyTag(tag);
 
                     if(splitTag.property == "IMAGE") {
+                        iDelay = 0.0;
                         var img = document.createElement("img");
                         img.src = splitTag.val;
                         storyContainer.appendChild(img);
+                        showAfter(iDelay, img);
+                        iDelay += 200.0;
+                        submitUpdate("displayImage", splitTag.val, playerNum, password);
                     }
 
                     // if( splitTag.property == "ADVANCE" ) {
@@ -144,6 +151,24 @@
                 submitUpdate("continueIfCan", "", playerNum, password);
 
             }
+
+            else if(event.message.type == "displayImage" && event.message.index != playerNum &&
+                    event.message.password == password) {
+
+                previousBottomEdge = contentBottomEdgeY();
+
+                iDelay = 0.0;
+                var img = document.createElement("img");
+                img.src = event.message.text;
+                storyContainer.appendChild(img);
+                showAfter(delay, img);
+                iDelay += 200.0;
+
+                storyContainer.style.height = contentBottomEdgeY()+"px";
+
+                scrollDown(previousBottomEdge);
+
+            } 
 
             else if(event.message.type == "requestChoices" && isHost &&
                     event.message.password == password) {
