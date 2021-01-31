@@ -56,7 +56,7 @@
                event.message.index == playerNum && 
                event.message.password == password) {
 
-                submitUpdate("requestParagraph", "", playerNum);
+                submitUpdate("requestParagraph", "", playerNum, password);
 
             } 
 
@@ -64,7 +64,7 @@
             else if(event.message.type == "requestParagraph" && isHost &&
                     event.message.password == password) {
 
-                submitUpdate("receiveParagraph", story.Continue(), event.message.index);
+                submitUpdate("receiveParagraph", story.Continue(), event.message.index, password);
 
             } 
 
@@ -74,10 +74,10 @@
 
                 if(story.canContinue)
                 {
-                    submitUpdate("receiveParagraph", story.Continue(), event.message.index);
+                    submitUpdate("receiveParagraph", story.Continue(), event.message.index, password);
                 } else {
                     story.currentChoices.forEach(function(choice) {
-                        submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index);
+                        submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
                     });
                 }
 
@@ -116,7 +116,7 @@
                             nextPlayer = 1;
                         }
 
-                        submitUpdate("receiveParagraph", paragraphText, nextPlayer);
+                        submitUpdate("receiveParagraph", paragraphText, nextPlayer, password);
                         
                         return;
                     }
@@ -135,7 +135,7 @@
                 showAfter(delay, paragraphElement);
                 delay += 200.0;
 
-                submitUpdate("continueIfCan", "", playerNum);
+                submitUpdate("continueIfCan", "", playerNum, password);
 
             } 
 
@@ -143,7 +143,7 @@
                     event.message.password == password) {
 
                 story.currentChoices.forEach(function(choice) {
-                    submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index);
+                    submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
                 });
 
             } 
@@ -172,7 +172,7 @@
 
                     event.preventDefault();
 
-                    submitUpdate("selectChoice", choiceIndex, playerNum);
+                    submitUpdate("selectChoice", choiceIndex, playerNum, password);
 
                 });
 
@@ -190,7 +190,7 @@
                     // Tell the story where to go next
                     story.ChooseChoiceIndex(choiceIndex);
 
-                    submitUpdate("madeChoice", "", event.message.index);
+                    submitUpdate("madeChoice", "", event.message.index, password);
                  }
 
             } 
@@ -199,7 +199,7 @@
                     event.message.password == password) {
 
                 removeAll("p.choice");
-                submitUpdate("requestParagraph", "", event.message.index);
+                submitUpdate("requestParagraph", "", event.message.index, password);
 
             } 
 
@@ -401,9 +401,7 @@
             // Create paragraph with anchor element
             var choiceParagraphElement = document.createElement('p');
             choiceParagraphElement.classList.add("choice");
-            // submitUpdate("choice", choice.text);
             choiceParagraphElement.innerHTML = `<a href='#'>${choice.text}</a>`
-            // submitUpdate("choice", choice.text, choice.index);
             storyContainer.appendChild(choiceParagraphElement);
 
             // Fade choice in after a short delay
@@ -421,8 +419,7 @@
                 removeAll("p.choice");
 
                 if(choice.text == "Begin Game") {
-                    submitUpdate("requestParagraph", "host", playerNum);
-                    removeAll("p");
+                    submitUpdate("requestParagraph", "host", playerNum, password);
                 }
 
                 // Tell the story where to go next
