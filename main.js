@@ -201,7 +201,14 @@
                 removeAll("p.choice");
                 submitUpdate("requestParagraph", "", event.message.index, password);
 
-            } 
+            }
+
+            else if(event.message.type == "removeAllContent" && event.message.index == playerNum && event.message.password == password) {
+
+                removeAll("p");
+                removeAll("p.choice");
+
+            }
 
             // HOST FUNC
             else if(event.message.type == "joinRequest") {
@@ -213,9 +220,7 @@
                     totalPlayers++;
                     clientIDs.push(event.message.index);
                     submitUpdate("welcome", "Welcome player " + totalPlayers + ".", clientUUID, password);
-                    for(let i = 0; i < clientIDs.length; i++) {
-                        submitUpdate("joinResponse-setID", "", clientIDs[i], event.message.password);
-                    }
+                    submitUpdate("joinResponse-setID", totalPlayers, event.message.index, event.message.password);
                 }
 
             } 
@@ -223,11 +228,11 @@
             // GUEST FUNC
             else if(event.message.type == "joinResponse-setID") {
                 
-                if(clientUUID != event.message.index && 
+                if(clientUUID == event.message.index && 
                     password == event.message.password &&
                     !isHost) { // for guest
-                    playerNum = totalPlayers;
-                    totalPlayers++;
+                    playerNum = event.message.text;
+                    totalPlayers = playerNum;
                     removeConnectivityInputFields();
                 } else if(password != event.message.password) {
                     displayMessage("Error", "Failure to join. Check password and try again.")
@@ -420,6 +425,11 @@
 
                 if(choice.text == "Begin Game") {
                     submitUpdate("requestParagraph", "host", playerNum, password);
+                    for(let i = 1; i <= totalPlayers; i++) {
+                        if(i != playerNum) {
+                            submitUpdate("removeAllContent", "", i, password);
+                        }
+                    }
                 }
 
                 // Tell the story where to go next
