@@ -1,7 +1,7 @@
 (function(storyContent) {
         // Create ink story from the content using inkjs
     var story = new inkjs.Story(storyContent);
-    _inkStory.ObserveVariable ("current_player_num", (string varName, object newValue) => {
+    story.ObserveVariable("current_player_num", (varName, newValue) => {
         setNextReader(newValue);
     });
 
@@ -375,6 +375,8 @@
         if(currentPlayerNum > totalPlayers) {
             nextReader = 1;
         }
+
+        console.log(nextReader);
     };
 
     // end pubnub
