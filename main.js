@@ -92,9 +92,9 @@
                         choices.push(choice);
                     });
                     choices.sort(function(a, b){return a.index < b.index})
-                    choices.forEach(function(choice)) {
+                    choices.forEach(function(choice) {
                         submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
-                    }
+                    });
                 }
 
             } 
