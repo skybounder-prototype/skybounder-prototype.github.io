@@ -91,7 +91,7 @@
                     story.currentChoices.forEach(function(choice) {
                         choices.push(choice);
                     });
-                    choices.sort(function(a, b){return a.index < b.index})
+                    choices.sort(function(a, b){return a.index > b.index})
                     choices.forEach(function(choice) {
                         submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
                     });
@@ -305,10 +305,7 @@
                     removeConnectivityInputFields();
                     displayMessage("Waiting...", "Waiting for host to begin game.");
 
-                    let header2 = document.createElement('h2');
-                    header2.setAttribute("class", "subtitle");
-                    document.getElementById('title').after(header2);
-                    header2.appendChild(document.createTextNode("Skybounder " + playerNum));
+                    setSkybounderPlayerNum();
 
                     removeAll('p');
                     removeAll('p.choice');
@@ -386,16 +383,23 @@
     };
 
     setNextReader = function(currentPlayerNum) {
-        nextReader = currentPlayerNum + 1;
-        console.log("total: " + totalPlayers);
-        if(nextReader > totalPlayers) {
-            nextReader = 1;
+        nextReader = currentPlayerNum - 1;
+
+        if(nextReader == 0) {
+            nextReader = totalPlayers;
         }
     };
 
     setTotalPlayers = function(newValue) {
         totalPlayers = newValue;
     };
+
+    setSkybounderPlayerNum = function() {
+        let header2 = document.createElement('h2');
+        header2.setAttribute("class", "subtitle");
+        document.getElementById('title').after(header2);
+        header2.appendChild(document.createTextNode("Skybounder " + playerNum));
+    }
 
     // end pubnub
 
@@ -521,10 +525,15 @@
                 // Remove all existing choices
                 removeAll("p.choice");
 
+                story.ChooseChoiceIndex(choice.index); // MOVE BELOW???
+
                 if(choice.text == "Begin Game") {
                     // Tell the story where to go next
+                    totalPlayers++;
                     playerNum = totalPlayers;
-                    story.ChooseChoiceIndex(choice.index);
+                    nextReader = playerNum;
+                    setSkybounderPlayerNum();
+
                     submitUpdate("requestParagraph", "host", playerNum, password);
                     for(let i = 1; i <= totalPlayers; i++) {
                         if(i != playerNum) {
@@ -533,6 +542,8 @@
                         }
                     }
                 }
+
+
             });
         });
 
