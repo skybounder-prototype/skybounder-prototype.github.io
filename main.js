@@ -207,7 +207,7 @@
 
                     event.preventDefault();
 
-                    if(choiceText == "Begin") {
+                    if(choiceText.includes("Begin")) {
                         submitUpdate("selectChoiceAndAdvance", choiceIndex, playerNum, password);
                     } else {
                         submitUpdate("selectChoice", choiceIndex, playerNum, password);
@@ -266,6 +266,7 @@
 
                 removeAll("p");
                 removeAll("p.choice");
+                removeAll("img");
                 removeMessageArea();
 
             }
