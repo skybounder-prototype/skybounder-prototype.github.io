@@ -4,13 +4,16 @@
     story.ObserveVariable("current_player_num", (varName, newValue) => {
         setNextReader(newValue);
     });
+    story.ObserveVariable("total_players", (varName, newValue) => {
+        setTotalPlayers(newValue);
+    });
 
     var firstMessage = true;
     var password = "sakhfg3467dalk43sbfekb;das";
     var clientIDs = [];
-    var playerNum = 1;
+    var playerNum = 0;
     var characterRole = "";
-    var totalPlayers = 1;
+    var totalPlayers = 0;
     var isHost = false;
     var delay = 0.0;
     var pDelay = 0.0;
@@ -84,9 +87,14 @@
                 {
                     submitUpdate("receiveParagraph", story.Continue(), event.message.index, password);
                 } else {
+                    var choices = [];
                     story.currentChoices.forEach(function(choice) {
-                        submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
+                        choices.push(choice);
                     });
+                    choices.sort(function(a, b){return a.index < b.index})
+                    choices.forEach(function(choice)) {
+                        submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
+                    }
                 }
 
             } 
@@ -168,7 +176,7 @@
                 showAfter(delay, img);
                 iDelay += 200.0;
 
-                storyContainer.style.height = contentBottomEdgeY()+"px";
+                storyContainer.style.height = contentBottomEdgeY() + "px";
 
                 scrollDown(previousBottomEdge);
 
@@ -296,6 +304,12 @@
                     totalPlayers = playerNum;
                     removeConnectivityInputFields();
                     displayMessage("Waiting...", "Waiting for host to begin game.");
+
+                    let header2 = document.createElement('h2');
+                    header2.setAttribute("class", "subtitle");
+                    document.getElementById('story');.after(header2);
+                    header2.appendChild(document.createTextNode("Skybounder " + playerNum));
+
                     removeAll('p');
                     removeAll('p.choice');
                 } else if(clientUUID == event.message.index && password != event.message.password && !isHost) {
@@ -377,6 +391,10 @@
         if(nextReader > totalPlayers) {
             nextReader = 1;
         }
+    };
+
+    setTotalPlayers = function(newValue) {
+        totalPlayers = newValue;
     };
 
     // end pubnub
@@ -482,6 +500,7 @@
         // Create HTML choices from ink choices
         story.currentChoices.forEach(function(choice) {
 
+
             // Create paragraph with anchor element
             var choiceParagraphElement = document.createElement('p');
             choiceParagraphElement.classList.add("choice");
@@ -503,6 +522,9 @@
                 removeAll("p.choice");
 
                 if(choice.text == "Begin Game") {
+                    // Tell the story where to go next
+                    playerNum = totalPlayers;
+                    story.ChooseChoiceIndex(choice.index);
                     submitUpdate("requestParagraph", "host", playerNum, password);
                     for(let i = 1; i <= totalPlayers; i++) {
                         if(i != playerNum) {
@@ -511,9 +533,6 @@
                         }
                     }
                 }
-
-                // Tell the story where to go next
-                story.ChooseChoiceIndex(choice.index);
             });
         });
 
