@@ -307,7 +307,7 @@
 
                     let header2 = document.createElement('h2');
                     header2.setAttribute("class", "subtitle");
-                    document.getElementById('story');.after(header2);
+                    document.getElementById('story').after(header2);
                     header2.appendChild(document.createTextNode("Skybounder " + playerNum));
 
                     removeAll('p');
