@@ -20,6 +20,7 @@
     var cDelay = 0.0;
     var iDelay = 0.0;
     var nextReader = 1;
+    var lastStoryElement;
 
     var outerScrollContainer = document.querySelector('.outerContainer');
     var storyContainer = document.querySelector('#story');
@@ -75,7 +76,8 @@
             else if(event.message.type == "requestParagraph" && isHost &&
                     event.message.password == password) {
 
-                submitUpdate("receiveParagraph", story.Continue(), event.message.index, password);
+                lastStoryElement = story.Continue();
+                submitUpdate("receiveParagraph", lastStoryElement, event.message.index, password);
 
             } 
 
@@ -279,6 +281,15 @@
 
             }
 
+            else if(event.message.type == "addRefreshStoryButton" && event.message.password == password && !isHost) {
+                addRefreshStoryButton();
+            }
+
+            // HOST FUNC
+            else if(event.message.type == "requestStoryRefresh" && isHost && event.message.password == password && nextReader == event.message.index) {
+                submitUpdate("receiveParagraph", lastStoryElement, event.message.index, password);
+            }
+
             // HOST FUNC
             else if(event.message.type == "joinRequest") {
 
@@ -399,6 +410,17 @@
         header2.setAttribute("class", "subtitle");
         document.getElementById('title').after(header2);
         header2.appendChild(document.createTextNode("Skybounder " + playerNum));
+    }
+
+    addRefreshStoryButton = function() {
+        let newButton = document.createElement('input');
+        newButton.setAttribute("id", "refresh");
+        newButton.setAttribute("type", "submit");
+        newButton.setAttribute("value", "Refresh Story");
+        document.getElementById('button-area').after(newButton);
+        newButton.addEventListener("click", () => {
+            submitUpdate("requestStoryRefresh", "", playerNum, password);
+        });
     }
 
     // end pubnub
@@ -533,11 +555,12 @@
                     playerNum = totalPlayers;
                     nextReader = playerNum;
                     setSkybounderPlayerNum();
-
+                    removeMessageArea();
                     submitUpdate("requestParagraph", "host", playerNum, password);
+                    submitUpdate("addRefreshStoryButton", "", "", password);
+                    addRefreshStoryButton();
                     for(let i = 1; i <= totalPlayers; i++) {
                         if(i != playerNum) {
-                            removeMessageArea();
                             submitUpdate("removeAllContent", "", i, password);
                         }
                     }
