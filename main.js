@@ -108,8 +108,11 @@
                 var paragraphIndex = 0;
                 
                 // Don't over-scroll past new content
-                previousBottomEdge = contentBottomEdgeY();
-                firstMessage = false;
+                if(firstMessage)
+                {
+                    previousBottomEdge = contentBottomEdgeY();
+                    firstMessage = false;
+                }
 
 
                 // Get ink to generate the next paragraph
@@ -267,6 +270,7 @@
             else if(event.message.type == "madeChoice" && event.message.index == playerNum &&
                     event.message.password == password) {
 
+                firstMessage = true;
                 removeAll("p.choice");
                 submitUpdate("requestParagraph", "", event.message.index, password);
 
