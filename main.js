@@ -77,8 +77,8 @@
                     event.message.password == password) {
 
                 lastStoryElement = story.Continue();
-                submitUpdate("receiveParagraph", lastStoryElement, event.message.index, password);
 
+                submitUpdate("receiveParagraph", lastStoryElement, event.message.index, password);
             } 
 
             // HOST FUNC
@@ -117,40 +117,11 @@
 
                 // Get ink to generate the next paragraph
                 var paragraphText = event.message.text;
-                var tags = story.currentTags;
 
                 // Any special tags included with this line
                 var customClasses = [];
-                for(var i=0; i<tags.length; i++) {
-                    var tag = tags[i];
-                    
-                    // Detect tags of the form "X: Y". Currently used for IMAGE and CLASS but could be
-                    // customised to be used for other things too.
-                    var splitTag = splitPropertyTag(tag);
 
-                    if(splitTag.property == "IMAGE") {
-                        iDelay = 0.0;
-                        var img = document.createElement("img");
-                        img.src = splitTag.val;
-                        storyContainer.appendChild(img);
-                        showAfter(iDelay, img);
-                        iDelay += 200.0;
-                        submitUpdate("displayImage", splitTag.val, playerNum, password);
-                    }
-
-                    // if( splitTag.property == "ADVANCE" ) {
-                    //     removeAll("p");
-                    //     var nextPlayer = playerNum + 1;
-                    //     displayMessage("PLAYER", nextPlayer + "'s turn.");
-                    //     if(nextPlayer > totalPlayers) {
-                    //         nextPlayer = 1;
-                    //     }
-
-                    //     submitUpdate("receiveParagraphAfterAdvancing", paragraphText, nextPlayer, password);
-                        
-                    //     return;
-                    // }
-                }
+                submitUpdate("requestTag", "", playerNum, password);
 
                 // Create paragraph element (initially hidden)
                 var paragraphElement = document.createElement('p');
@@ -167,6 +138,26 @@
 
                 submitUpdate("continueIfCan", "", playerNum, password);
 
+            }
+
+            else if(event.message.type == "requestTag" && isHost && event.message.password == password) {
+                var tags = story.currentTags;
+                for(var i=0; i<tags.length; i++) {
+                    var tag = tags[i];
+                    // Detect tags of the form "X: Y". Currently used for IMAGE and CLASS but could be
+                    // customised to be used for other things too.
+                    var splitTag = splitPropertyTag(tag);
+
+                    if(splitTag.property == "IMAGE") {
+                        iDelay = 0.0;
+                        var img = document.createElement("img");
+                        img.src = splitTag.val;
+                        storyContainer.appendChild(img);
+                        showAfter(iDelay, img);
+                        iDelay += 200.0;
+                        submitUpdate("displayImage", splitTag.val, playerNum, password);
+                    }
+                }
             }
 
             else if(event.message.type == "displayImage" && event.message.index != playerNum &&
@@ -318,13 +309,14 @@
                     playerNum = event.message.text;
                     totalPlayers = playerNum;
                     removeConnectivityInputFields();
-                    submitUpdate(receiveParagraph, "You are Skybounder " + playerNum, playerNum, password);
                     displayMessage("Waiting...", "Waiting for host to begin game.");
 
                     setSkybounderPlayerNum();
 
                     removeAll('p');
                     removeAll('p.choice');
+
+                    displayNextParagraph("You are Skybounder " + playerNum + ".", false);
                 } else if(clientUUID == event.message.index && password != event.message.password && !isHost) {
                     displayMessage("Error", "Failure to join. Check password and try again.")
                 }
@@ -426,6 +418,72 @@
         newButton.addEventListener("click", () => {
             submitUpdate("requestStoryRefresh", "", playerNum, password);
         });
+    }
+
+    displayNextParagraph = function(text, shouldUpdate) {
+        var paragraphIndex = 0;
+                
+        // Don't over-scroll past new content
+        if(firstMessage)
+        {
+            previousBottomEdge = contentBottomEdgeY();
+            firstMessage = false;
+        }
+
+
+        // Get ink to generate the next paragraph
+        var paragraphText = text;
+        var tags = story.currentTags;
+
+        // Any special tags included with this line
+        var customClasses = [];
+        for(var i=0; i<tags.length; i++) {
+            var tag = tags[i];
+            
+            // Detect tags of the form "X: Y". Currently used for IMAGE and CLASS but could be
+            // customised to be used for other things too.
+            var splitTag = splitPropertyTag(tag);
+
+            if(splitTag.property == "IMAGE") {
+                iDelay = 0.0;
+                var img = document.createElement("img");
+                img.src = splitTag.val;
+                storyContainer.appendChild(img);
+                showAfter(iDelay, img);
+                iDelay += 200.0;
+                submitUpdate("displayImage", splitTag.val, playerNum, password);
+            }
+
+            // if( splitTag.property == "ADVANCE" ) {
+            //     removeAll("p");
+            //     var nextPlayer = playerNum + 1;
+            //     displayMessage("PLAYER", nextPlayer + "'s turn.");
+            //     if(nextPlayer > totalPlayers) {
+            //         nextPlayer = 1;
+            //     }
+
+            //     submitUpdate("receiveParagraphAfterAdvancing", paragraphText, nextPlayer, password);
+                
+            //     return;
+            // }
+        }
+
+        // Create paragraph element (initially hidden)
+        var paragraphElement = document.createElement('p');
+        paragraphElement.innerHTML = paragraphText;
+        storyContainer.appendChild(paragraphElement);
+        
+        // Add any custom classes derived from ink tags
+        for(var i=0; i<customClasses.length; i++)
+            paragraphElement.classList.add(customClasses[i]);
+
+        // Fade in paragraph after a short delay
+        showAfter(delay, paragraphElement);
+        delay += 200.0;
+
+        if(shouldUpdate) {
+            submitUpdate("continueIfCan", "", playerNum, password);
+        }
     }
 
     // end pubnub
@@ -561,7 +619,9 @@
                     nextReader = playerNum;
                     setSkybounderPlayerNum();
                     removeMessageArea();
-                    submitUpdate(receiveParagraph, "You are Skybounder " + playerNum, playerNum, password);
+
+                    displayNextParagraph("You are Skybounder " + playerNum + ".", false);
+
                     submitUpdate("requestParagraph", "host", playerNum, password);
                     submitUpdate("addRefreshStoryButton", "", "", password);
                     addRefreshStoryButton();
