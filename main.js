@@ -318,6 +318,7 @@
                     playerNum = event.message.text;
                     totalPlayers = playerNum;
                     removeConnectivityInputFields();
+                    submitUpdate(receiveParagraph, "You are Skybounder " + playerNum, playerNum, password);
                     displayMessage("Waiting...", "Waiting for host to begin game.");
 
                     setSkybounderPlayerNum();
@@ -560,6 +561,7 @@
                     nextReader = playerNum;
                     setSkybounderPlayerNum();
                     removeMessageArea();
+                    submitUpdate(receiveParagraph, "You are Skybounder " + playerNum, playerNum, password);
                     submitUpdate("requestParagraph", "host", playerNum, password);
                     submitUpdate("addRefreshStoryButton", "", "", password);
                     addRefreshStoryButton();
