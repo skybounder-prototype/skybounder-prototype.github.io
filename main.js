@@ -174,7 +174,7 @@
 
                 storyContainer.style.height = contentBottomEdgeY() + "px";
 
-                scrollDown(previousBottomEdge);
+                scrollDown(contentBottomEdgeY());
 
             } 
 
