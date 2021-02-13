@@ -1,12 +1,152 @@
+let ADVENTURER = 0;
+let GUARDIAN = 1;
+let SCHOLAR = 2;
+let HEALER = 3;
+let SLAYER = 4;
+let THIEF = 5;
+
+class PlayerTypeCount {
+    constructor(advPoints, guaPoints, schPoints, heaPoints, slaPoints, thiPoints) {
+        this.points = [[ADVENTURER, advPoints], 
+                       [GUARDIAN, guaPoints], 
+                       [SCHOLAR, schPoints], 
+                       [HEALER, heaPoints], 
+                       [SLAYER, slaPoints], 
+                       [THIEF, thiPoints]];
+    }
+
+    sortPoints() {
+        this.points.sort(function(a, b) {
+            return a[1] > b[1];
+        });
+    }
+
+    determineRole(rolesTaken) {
+        var role = -1;
+
+        for(var i = 0; i < this.points.length; i++) {
+            var entry = this.points[i];
+            if(!role.includes(entry[0])) {
+                role = entry[0];
+                break;
+            }
+        }
+
+        return role;
+    }
+}
+
 (function(storyContent) {
         // Create ink story from the content using inkjs
     var story = new inkjs.Story(storyContent);
+    let playerTypeCounts = [];
+
     story.ObserveVariable("current_player_num", (varName, newValue) => {
         setNextReader(newValue);
     });
     story.ObserveVariable("total_players", (varName, newValue) => {
         setTotalPlayers(newValue);
     });
+    story.ObserveVariable("finished_setting_player_type_vals", (varName, newValue) => {
+        setPlayerTypeCounts();
+
+        for(var i = 0; i < playerTypeCounts.length; i++){
+            playerTypeCounts[i].sortPoints();
+        }
+
+        var rolesTaken = [];
+        for(var i = 0; i < playerTypeCounts.length; i++) {
+            rolesTaken.push(playerTypeCounts.determineRole(rolesTaken));
+        }
+
+        story.variablesState["player_1_role_index"] = rolesTaken[0] + 1;
+        story.variablesState["player_2_role_index"] = rolesTaken[1] + 1;
+        story.variablesState["player_3_role_index"] = rolesTaken[2] + 1;
+        story.variablesState["player_4_role_index"] = rolesTaken[3] + 1;
+        if(totalPlayers > 4) story.variablesState["player_5_role_index"] = rolesTaken[4] + 1;
+        if(totalPlayers > 5) story.variablesState["player_6_role_index"] = rolesTaken[5] + 1;
+
+        var healerPoints = [];
+        for(var i = 0; i < playerTypeCounts.length; i++) {
+            healerPoints.push([i + 1, playerTypeCounts[i].points[HEALER][1]]);
+        }
+        healerPoints.sort(function(a, b) {
+            return a[1] > b[1];
+        });
+        for(var i = 0; i < healerPoints.length; i++) {
+            story.variablesState["spirit_rank_" + (i + 1)] = healerPoints[i][0];
+        }
+
+        var slayerPoints = [];
+        for(var i = 0; i < playerTypeCounts.length; i++) {
+            slayerPoints.push([i + 1, playerTypeCounts[i].points[SLAYER][1]]);
+        }
+        slayerPoints.sort(function(a, b) {
+            return a[1] > b[1];
+        });
+        for(var i = 0; i < slayerPoints.length; i++) {
+            story.variablesState["bloodlust_rank_" + (i + 1)] = slayerPoints[i][0];
+        }
+
+        var thiefPoints = [];
+        for(var i = 0; i < playerTypeCounts.length; i++) {
+            thiefPoints.push([i + 1, playerTypeCounts[i].points[THIEF][1]]);
+        }
+        thiefPoints.sort(function(a, b) {
+            return a[1] > b[1];
+        });
+        for(var i = 0; i < thiefPoints.length; i++) {
+            story.variablesState["agility_rank_" + (i + 1)] = thiefPoints[i][0];
+        }
+    });
+
+    setPlayerTypeCounts = function() {
+        playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_1_adventurer_points"],
+                                                  story.variablesState["player_1_guardian_points"],
+                                                  story.variablesState["player_1_scholar_points"],
+                                                  story.variablesState["player_1_healer_points"],
+                                                  story.variablesState["player_1_slayer_points"],
+                                                  story.variablesState["player_1_thief_points"]));
+
+        playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_2_adventurer_points"],
+                                                  story.variablesState["player_2_guardian_points"],
+                                                  story.variablesState["player_2_scholar_points"],
+                                                  story.variablesState["player_2_healer_points"],
+                                                  story.variablesState["player_2_slayer_points"],
+                                                  story.variablesState["player_2_thief_points"]));
+
+        playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_3_adventurer_points"],
+                                                  story.variablesState["player_3_guardian_points"],
+                                                  story.variablesState["player_3_scholar_points"],
+                                                  story.variablesState["player_3_healer_points"],
+                                                  story.variablesState["player_3_slayer_points"],
+                                                  story.variablesState["player_3_thief_points"]));
+
+        playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_4_adventurer_points"],
+                                                  story.variablesState["player_4_guardian_points"],
+                                                  story.variablesState["player_4_scholar_points"],
+                                                  story.variablesState["player_4_healer_points"],
+                                                  story.variablesState["player_4_slayer_points"],
+                                                  story.variablesState["player_4_thief_points"]));
+
+        if(totalPlayers > 4) {
+            playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_5_adventurer_points"],
+                                                  story.variablesState["player_5_guardian_points"],
+                                                  story.variablesState["player_5_scholar_points"],
+                                                  story.variablesState["player_5_healer_points"],
+                                                  story.variablesState["player_5_slayer_points"],
+                                                  story.variablesState["player_5_thief_points"]));
+        }
+
+        if(totalPlayers > 5) {
+            playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_6_adventurer_points"],
+                                                  story.variablesState["player_6_guardian_points"],
+                                                  story.variablesState["player_6_scholar_points"],
+                                                  story.variablesState["player_6_healer_points"],
+                                                  story.variablesState["player_6_slayer_points"],
+                                                  story.variablesState["player_6_thief_points"]));
+        }
+    };
 
     var firstMessage = true;
     var password = "sakhfg3467dalk43sbfekb;das";
@@ -149,18 +289,14 @@
                     var splitTag = splitPropertyTag(tag);
 
                     if(splitTag.property == "IMAGE") {
-                        iDelay = 0.0;
-                        var img = document.createElement("img");
-                        img.src = splitTag.val;
-                        storyContainer.appendChild(img);
-                        showAfter(iDelay, img);
-                        iDelay += 200.0;
                         submitUpdate("displayImage", splitTag.val, playerNum, password);
+                    } else if(splitTag.property == "STATS") {
+                        submitUpdate("receiveParagraph", lastStoryElement, splitTag.val, password);
                     }
                 }
             }
 
-            else if(event.message.type == "displayImage" && event.message.index != playerNum &&
+            else if(event.message.type == "displayImage" &&
                     event.message.password == password) {
 
                 previousBottomEdge = contentBottomEdgeY();
@@ -630,6 +766,16 @@
                             submitUpdate("removeAllContent", "", i, password);
                         }
                     }
+                } else if(choice.text == "Host") {
+                    hostButton.hidden = false;
+                    document.getElementById('password').hidden = false;
+                    document.getElementById('name').hidden = false;
+                    continueStory(false);
+                } else if(choice.text == "Join") {
+                    joinButton.hidden = false;
+                    document.getElementById('password').hidden = false;
+                    document.getElementById('name').hidden = false;
+                    continueStory(false);
                 }
 
 
