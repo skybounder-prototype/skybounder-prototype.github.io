@@ -759,8 +759,8 @@ class PlayerTypeCount {
                     displayNextParagraph("You are Skybounder " + playerNum + ".", false);
 
                     submitUpdate("requestParagraph", "host", playerNum, password);
-                    submitUpdate("addRefreshStoryButton", "", "", password);
-                    addRefreshStoryButton();
+                    // submitUpdate("addRefreshStoryButton", "", "", password);
+                    // addRefreshStoryButton();
                     for(let i = 1; i <= totalPlayers; i++) {
                         if(i != playerNum) {
                             submitUpdate("removeAllContent", "", i, password);
