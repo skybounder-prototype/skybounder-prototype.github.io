@@ -56,7 +56,7 @@ class PlayerTypeCount {
 
         var rolesTaken = [];
         for(var i = 0; i < playerTypeCounts.length; i++) {
-            rolesTaken.push(playerTypeCounts.determineRole(rolesTaken));
+            rolesTaken.push(playerTypeCounts[i].determineRole(rolesTaken));
         }
 
         story.variablesState["player_1_role_index"] = rolesTaken[0] + 1;
@@ -413,7 +413,7 @@ class PlayerTypeCount {
             }
 
             else if(event.message.type == "addRefreshStoryButton" && event.message.password == password && !isHost) {
-                addRefreshStoryButton();
+                // addRefreshStoryButton();
             }
 
             // HOST FUNC
