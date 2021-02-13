@@ -311,6 +311,40 @@ class PlayerTypeCount {
 
             }
 
+            else if(event.message.type == "receiveStats" && event.message.index == playerNum &&
+                    event.message.password == password) {
+
+                var paragraphIndex = 0;
+                
+                // Don't over-scroll past new content
+                if(firstMessage)
+                {
+                    previousBottomEdge = contentBottomEdgeY();
+                    firstMessage = false;
+                }
+
+
+                // Get ink to generate the next paragraph
+                var paragraphText = event.message.text;
+
+                // Any special tags included with this line
+                var customClasses = [];
+
+                // Create paragraph element (initially hidden)
+                var paragraphElement = document.createElement('p');
+                paragraphElement.innerHTML = paragraphText;
+                storyContainer.appendChild(paragraphElement);
+                
+                // Add any custom classes derived from ink tags
+                for(var i=0; i<customClasses.length; i++)
+                    paragraphElement.classList.add(customClasses[i]);
+
+                // Fade in paragraph after a short delay
+                showAfter(delay, paragraphElement);
+                delay += 200.0;
+
+            }
+
             else if(event.message.type == "requestTag" && isHost && event.message.password == password) {
                 var tags = story.currentTags;
                 for(var i=0; i<tags.length; i++) {
@@ -383,27 +417,27 @@ class PlayerTypeCount {
                             var textToSend = "";
 
                             if(story.variablesState["player_" + i + "_equipment_type"] != story.variablesState["NO_WEAPON"]) {
-                                textToSend = "Draw the " + color_dict[story.variablesState["player_" + i + "_equipment_color"]] + " " + equipment_dict[story.variablesState["player_" + i + "_equipment_type"]] + ".";
-                                submitUpdate("receiveParagraph", textToSend, i, password);
+                                textToSend = "Draw the " + color_dict[story.variablesState["player_" + i + "_equipment_color"]] + " " + equipment_dict[story.variablesState["player_" + i + "_equipment_type"]] + ".\r";
+                                submitUpdate("receiveStats", textToSend, i, password);
                             }
+                            
+                            textToSend = "Hearts: " + (2 + story.variablesState["player_" + i + "_bonus_hearts"] + Math.floor(story.variablesState["player_" + i + "_guardian_points"] / 3)) + "\r";
+                            submitUpdate("receiveStats", textToSend, i, password);
 
-                            textToSend = "Hearts: " + (2 + story.variablesState["player_" + i + "_bonus_hearts"] + Math.floor(story.variablesState["player_" + i + "_guardian_points"] / 2));
-                            submitUpdate("receiveParagraph", textToSend, i, password);
+                            textToSend = "Intellect: " + (1 + story.variablesState["player_" + i + "_bonus_intellect"] + Math.floor(story.variablesState["player_" + i + "_scholar_points"] / 3)) + "\r";
+                            submitUpdate("receiveStats", textToSend, i, password);
 
-                            textToSend = "Intellect: " + (1 + story.variablesState["player_" + i + "_bonus_intellect"] + Math.floor(story.variablesState["player_" + i + "_scholar_points"] / 2));
-                            submitUpdate("receiveParagraph", textToSend, i, password);
+                            textToSend = "Spirit Power: " + (7 - getStatRankForPlayer("spirit", i)) + "\r";
+                            submitUpdate("receiveStats", textToSend, i, password);
 
-                            textToSend = "Spirit Power: " + (7 - getStatRankForPlayer("spirit", i));
-                            submitUpdate("receiveParagraph", textToSend, i, password);
+                            textToSend = "Agility Power: " + (7 - getStatRankForPlayer("agility", i)) + "\r";
+                            submitUpdate("receiveStats", textToSend, i, password);
 
-                            textToSend = "Agility Power: " + (7 - getStatRankForPlayer("agility", i));
-                            submitUpdate("receiveParagraph", textToSend, i, password);
+                            textToSend = "Bloodlust Power: " + (7 - getStatRankForPlayer("bloodlust", i)) + "\r";
+                            submitUpdate("receiveStats", textToSend, i, password);
 
-                            textToSend = "Bloodlust Power: " + (7 - getStatRankForPlayer("bloodlust", i));
-                            submitUpdate("receiveParagraph", textToSend, i, password);
-
-                            textToSend = "Gold: " + story.variablesState["player_" + i + "_gold"];
-                            submitUpdate("receiveParagraph", textToSend, i, password);
+                            textToSend = "Gold: " + story.variablesState["player_" + i + "_gold"] + "\r";
+                            submitUpdate("receiveStats", textToSend, i, password);
                         }
 
                         submitUpdate("selectChoice", choiceIndex, playerNum, password);
