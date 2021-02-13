@@ -24,15 +24,13 @@ class PlayerTypeCount {
     determineRole(rolesTaken) {
         var role = -1;
 
-        for(var i = 0; i < this.points.length; i++) {
-            var entry = this.points[i];
-            if(!rolesTaken.includes(entry[0])) {
-                role = entry[0];
-                rolesTaken.push(role);
-                break;
+        for(var i = 0; i < this.points.length && role == -1; i++) {
+            if(!rolesTaken.includes(this.points[i][0])) {
+                role = this.points[i][0];
             }
         }
 
+        console.log(role);
         return role;
     }
 }
@@ -54,6 +52,13 @@ class PlayerTypeCount {
         for(var i = 0; i < playerTypeCounts.length; i++){
             playerTypeCounts[i].sortPoints();
         }
+
+        // log vals to check
+        // for(var i = 0; i < playerTypeCounts.length; i++) {
+        //     for(var j = 0; j < playerTypeCounts[i].points.length; j++) {
+        //         console.log(playerTypeCounts[i].points[j][0] + " " + playerTypeCounts[i].points[j][1]);
+        //     }
+        // }
 
         var rolesTaken = [];
         for(var i = 0; i < playerTypeCounts.length; i++) {
