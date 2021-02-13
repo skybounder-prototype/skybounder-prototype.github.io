@@ -26,8 +26,9 @@ class PlayerTypeCount {
 
         for(var i = 0; i < this.points.length; i++) {
             var entry = this.points[i];
-            if(!role.includes(entry[0])) {
+            if(!rolesTaken.includes(entry[0])) {
                 role = entry[0];
+                rolesTaken.push(role);
                 break;
             }
         }
