@@ -39,6 +39,9 @@ class PlayerTypeCount {
         // Create ink story from the content using inkjs
     var story = new inkjs.Story(storyContent);
     let playerTypeCounts = [];
+    var healerPoints;
+    var slayerPoints;
+    var thiefPoints;
 
     story.ObserveVariable("current_player_num", (varName, newValue) => {
         setNextReader(newValue);
@@ -72,7 +75,7 @@ class PlayerTypeCount {
         if(totalPlayers > 4) story.variablesState["player_5_role_index"] = rolesTaken[4] + 1;
         if(totalPlayers > 5) story.variablesState["player_6_role_index"] = rolesTaken[5] + 1;
 
-        var healerPoints = [];
+        healerPoints = [];
         for(var i = 0; i < playerTypeCounts.length; i++) {
             healerPoints.push([i + 1, playerTypeCounts[i].points[HEALER][1]]);
         }
@@ -83,7 +86,7 @@ class PlayerTypeCount {
             story.variablesState["spirit_rank_" + (i + 1)] = healerPoints[i][0];
         }
 
-        var slayerPoints = [];
+        slayerPoints = [];
         for(var i = 0; i < playerTypeCounts.length; i++) {
             slayerPoints.push([i + 1, playerTypeCounts[i].points[SLAYER][1]]);
         }
@@ -94,7 +97,7 @@ class PlayerTypeCount {
             story.variablesState["bloodlust_rank_" + (i + 1)] = slayerPoints[i][0];
         }
 
-        var thiefPoints = [];
+        thiefPoints = [];
         for(var i = 0; i < playerTypeCounts.length; i++) {
             thiefPoints.push([i + 1, playerTypeCounts[i].points[THIEF][1]]);
         }
@@ -154,6 +157,14 @@ class PlayerTypeCount {
         }
     };
 
+    getStatRankForPlayer = function(stat, playerNum) {
+        for(var i = 1; i <= totalPlayers; i++) {
+            if(story.variablesState[stat + "_rank_" + i] == playerNum) {
+                return i;
+            }
+        }
+    };
+
     var firstMessage = true;
     var password = "sakhfg3467dalk43sbfekb;das";
     var clientIDs = [];
@@ -171,7 +182,21 @@ class PlayerTypeCount {
     var outerScrollContainer = document.querySelector('.outerContainer');
     var storyContainer = document.querySelector('#story');
     var previousBottomEdge = 0;
+    let NO_WEAPON = 0 
+    let RED = 1
+    let ORANGE = 2
+    let YELLOW = 3
+    let GREEN = 4
+    let BLUE = 5
+    let PURPLE = 6
+    let color_dict = {RED: "Red", ORANGE: "Orange", YELLOW: "Armor", GREEN: "Green", BLUE: "Blue", PURPLE: "Purple"};
 
+    let WEAPON = 1
+    let RING = 2
+    let ARMOR = 3
+    let HELM = 4
+    let FOOTWEAR = 5
+    let equipement_dict = {WEAPON: "Weapon", RING: "Ring", ARMOR: "Armor", HELM: "Helm", FOOTWEAR: "Footwear"};
     // start pubnub
 
     const messagesTop = document.getElementById('messages-top');
@@ -296,8 +321,6 @@ class PlayerTypeCount {
 
                     if(splitTag.property == "IMAGE") {
                         submitUpdate("displayImage", splitTag.val, playerNum, password);
-                    } else if(splitTag.property == "STATS") {
-                        submitUpdate("receiveParagraph", lastStoryElement, splitTag.val, password);
                     }
                 }
             }
@@ -355,6 +378,24 @@ class PlayerTypeCount {
 
                     if(choiceText.includes("Begin")) {
                         submitUpdate("selectChoiceAndAdvance", choiceIndex, playerNum, password);
+                    } else if(choiceText.includes("Display Stats")) {
+                        for(var i = 1; i <= totalPlayers; i++) {
+                            var textToSend = "";
+
+                            if(story.variablesState["player_" + i + "_equipment_type"] != story.variablesState["NO_WEAPON"]) {
+                                textToSend += "Draw the " + color_dict[story.variablesState["player_" + i + "_equipment_color"]] + " " + equipment_dict[story.variablesState["player_" + i + "_equipment_type"]] + ".";
+                            }
+                            textToSend += "\nHearts: " + (2 + story.variablesState["player_" + i + "_bonus_hearts"] + (story.variablesState["player_" + i + "_guardian_points"] / 2));
+                            textToSend += "\nIntellect: " + (1 + story.variablesState["player_" + i + "_bonus_intellect"] + (story.variablesState["player_" + i + "_scholar_points"] / 2));
+                            textToSend += "\nSpirit Power: " + (7 - getStatRankForPlayer("spirit", i));
+                            textToSend += "\nAgility Power: " + (7 - getStatRankForPlayer("agility", i));
+                            textToSend += "\nBloodlust Power: " + (7 - getStatRankForPlayer("bloodlust", i));
+                            textToSend += "\nGold: " + story.variablesState["player_" + i + "_gold"];
+
+                            submitUpdate("receiveParagraph", textToSend, i, password);
+                        }
+
+                        submitUpdate("selectChoice", choiceIndex, playerNum, password);
                     } else {
                         submitUpdate("selectChoice", choiceIndex, playerNum, password);
                     }
