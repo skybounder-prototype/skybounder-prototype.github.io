@@ -72,8 +72,6 @@ class PlayerTypeCount {
         if(totalPlayers > 4) story.variablesState["player_5_role_index"] = rolesTaken[4] + 1;
         if(totalPlayers > 5) story.variablesState["player_6_role_index"] = rolesTaken[5] + 1;
 
-        console.log(story.variablesState["player_1_role_index"]);
-
         var healerPoints = [];
         for(var i = 0; i < playerTypeCounts.length; i++) {
             healerPoints.push([i + 1, playerTypeCounts[i].points[HEALER][1]]);
