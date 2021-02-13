@@ -182,21 +182,21 @@ class PlayerTypeCount {
     var outerScrollContainer = document.querySelector('.outerContainer');
     var storyContainer = document.querySelector('#story');
     var previousBottomEdge = 0;
-    let NO_WEAPON = 0 
-    let RED = 1
-    let ORANGE = 2
-    let YELLOW = 3
-    let GREEN = 4
-    let BLUE = 5
-    let PURPLE = 6
-    let color_dict = {RED: "Red", ORANGE: "Orange", YELLOW: "Armor", GREEN: "Green", BLUE: "Blue", PURPLE: "Purple"};
+    var NO_WEAPON = 0;
+    var RED = 1;
+    var ORANGE = 2;
+    var YELLOW = 3;
+    var GREEN = 4;
+    var BLUE = 5;
+    var PURPLE = 6;
+    var color_dict = {1: "Red", 2: "Orange", 3: "Armor", 4: "Green", 5: "Blue", 6: "Purple"};
 
-    let WEAPON = 1
-    let RING = 2
-    let ARMOR = 3
-    let HELM = 4
-    let FOOTWEAR = 5
-    let equipement_dict = {WEAPON: "Weapon", RING: "Ring", ARMOR: "Armor", HELM: "Helm", FOOTWEAR: "Footwear"};
+    var WEAPON = 1;
+    var RING = 2;
+    var ARMOR = 3;
+    var HELM = 4;
+    var FOOTWEAR = 5;
+    var equipment_dict = {1: "Weapon", 2: "Ring", 3: "Armor", 4: "Helm", 5: "Footwear"};
     // start pubnub
 
     const messagesTop = document.getElementById('messages-top');
@@ -383,15 +383,26 @@ class PlayerTypeCount {
                             var textToSend = "";
 
                             if(story.variablesState["player_" + i + "_equipment_type"] != story.variablesState["NO_WEAPON"]) {
-                                textToSend += "Draw the " + color_dict[story.variablesState["player_" + i + "_equipment_color"]] + " " + equipment_dict[story.variablesState["player_" + i + "_equipment_type"]] + ".";
+                                textToSend = "Draw the " + color_dict[story.variablesState["player_" + i + "_equipment_color"]] + " " + equipment_dict[story.variablesState["player_" + i + "_equipment_type"]] + ".";
+                                submitUpdate("receiveParagraph", textToSend, i, password);
                             }
-                            textToSend += "\nHearts: " + (2 + story.variablesState["player_" + i + "_bonus_hearts"] + (story.variablesState["player_" + i + "_guardian_points"] / 2));
-                            textToSend += "\nIntellect: " + (1 + story.variablesState["player_" + i + "_bonus_intellect"] + (story.variablesState["player_" + i + "_scholar_points"] / 2));
-                            textToSend += "\nSpirit Power: " + (7 - getStatRankForPlayer("spirit", i));
-                            textToSend += "\nAgility Power: " + (7 - getStatRankForPlayer("agility", i));
-                            textToSend += "\nBloodlust Power: " + (7 - getStatRankForPlayer("bloodlust", i));
-                            textToSend += "\nGold: " + story.variablesState["player_" + i + "_gold"];
 
+                            textToSend = "Hearts: " + (2 + story.variablesState["player_" + i + "_bonus_hearts"] + Math.floor(story.variablesState["player_" + i + "_guardian_points"] / 2));
+                            submitUpdate("receiveParagraph", textToSend, i, password);
+
+                            textToSend = "Intellect: " + (1 + story.variablesState["player_" + i + "_bonus_intellect"] + Math.floor(story.variablesState["player_" + i + "_scholar_points"] / 2));
+                            submitUpdate("receiveParagraph", textToSend, i, password);
+
+                            textToSend = "Spirit Power: " + (7 - getStatRankForPlayer("spirit", i));
+                            submitUpdate("receiveParagraph", textToSend, i, password);
+
+                            textToSend = "Agility Power: " + (7 - getStatRankForPlayer("agility", i));
+                            submitUpdate("receiveParagraph", textToSend, i, password);
+
+                            textToSend = "Bloodlust Power: " + (7 - getStatRankForPlayer("bloodlust", i));
+                            submitUpdate("receiveParagraph", textToSend, i, password);
+
+                            textToSend = "Gold: " + story.variablesState["player_" + i + "_gold"];
                             submitUpdate("receiveParagraph", textToSend, i, password);
                         }
 
