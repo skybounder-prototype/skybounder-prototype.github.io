@@ -97,7 +97,9 @@
                 showAfter(delay, paragraphElement);
                 delay += 200.0;
 
-                submitUpdate("continueIfCan", "", playerNum, password);
+                if(isHost) {
+                    submitUpdate("continueIfCan", "", playerNum, password);
+                }
 
             }
 
@@ -111,9 +113,13 @@
                         submitUpdate("receiveParagraph", nextStorySegment, i, password);
                     }
                 } else {
-                    story.currentChoices.forEach(function(choice) {
-                        submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
-                    });
+                    if(playerNum == totalPlayers) {
+                        story.currentChoices.forEach(function(choice) {
+                            for(var i = 1; i <= totalPlayers; i++) {
+                                submitUpdate("receiveChoice", choice.text + ":" + choice.index, i, password);
+                            }
+                        });
+                    }
                 }
 
             }
@@ -149,15 +155,6 @@
                 storyContainer.style.height = contentBottomEdgeY() + "px";
 
                 scrollDown(contentBottomEdgeY());
-
-            }
-
-            else if(event.message.type == "requestChoices" && isHost &&
-                    event.message.password == password) {
-
-                story.currentChoices.forEach(function(choice) {
-                    submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
-                });
 
             }
 
