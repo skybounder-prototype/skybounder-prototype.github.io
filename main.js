@@ -57,7 +57,7 @@
             if(event.message.type == "requestParagraph" && isHost && event.message.password == password) {
                 if(story.canContinue) {
                     var nextStorySegment = story.Continue();
-                    for(var i = 0; i <= totalPlayers; i++) {
+                    for(var i = 1; i <= totalPlayers; i++) {
                         submitUpdate("receiveParagraph", nextStorySegment, i, password);
                     }
                 }
@@ -106,7 +106,10 @@
                     event.message.password == password) {
 
                 if(story.canContinue) {
-                    submitUpdate("receiveParagraph", story.Continue(), event.message.index, password);
+                    var nextStorySegment = story.Continue();
+                    for(var i = 1; i <= totalPlayers; i++) {
+                        submitUpdate("receiveParagraph", nextStorySegment, i, password);
+                    }
                 } else {
                     story.currentChoices.forEach(function(choice) {
                         submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
@@ -124,7 +127,7 @@
                     var splitTag = splitPropertyTag(tag);
 
                     if(splitTag.property == "IMAGE") {
-                        for(var i = 0; i <= totalPlayers; i++) {
+                        for(var i = 1; i <= totalPlayers; i++) {
                             submitUpdate("displayImage", splitTag.val, i, password);
                         }
                     }
@@ -197,7 +200,7 @@
                     // Tell the story where to go next
                     story.ChooseChoiceIndex(choiceIndex);
 
-                    for(var i = 0; i <= totalPlayers; i++) {
+                    for(var i = 1; i <= totalPlayers; i++) {
                         submitUpdate("madeChoice", "", i, password);
                     }
 
