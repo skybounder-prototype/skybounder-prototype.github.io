@@ -6,6 +6,7 @@
     var password = "sakhfg3467dalk43sbfekb;das";
     var clientIDs = [];
     var playerNum = 0;
+    var totalPlayers = 0;
     var isHost = false;
     var delay = 0.0;
     var pDelay = 0.0;
@@ -54,10 +55,15 @@
         message: function(event) {
 
             if(event.message.type == "requestParagraph" && isHost && event.message.password == password) {
-                submitUpdate("receiveParagraph", story.Continue(), event.message.index, password);
+                if(story.canContinue) {
+                    var nextStorySegment = story.Continue();
+                    for(var i = 0; i <= totalPlayers; i++) {
+                        submitUpdate("receiveParagraph", nextStorySegment, i, password);
+                    }
+                }
             }
 
-            else if(event.message.type == "receiveParagraph" && event.message.password == password) {
+            else if(event.message.type == "receiveParagraph" && playerNum == event.message.index && event.message.password == password) {
                 var paragraphIndex = 0;
 
                 // Don't over-scroll past new content
@@ -74,7 +80,9 @@
                 // Any special tags included with this line
                 var customClasses = [];
 
-                submitUpdate("requestTag", "", playerNum, password);
+                if(isHost) {
+                    submitUpdate("requestTag", "", playerNum, password);
+                }
 
                 // Create paragraph element (initially hidden)
                 var paragraphElement = document.createElement('p');
@@ -90,22 +98,17 @@
                 delay += 200.0;
 
                 submitUpdate("continueIfCan", "", playerNum, password);
+
             }
 
             // HOST FUNC
             else if(event.message.type == "continueIfCan" && isHost &&
                     event.message.password == password) {
 
-                if(story.canContinue)
-                {
+                if(story.canContinue) {
                     submitUpdate("receiveParagraph", story.Continue(), event.message.index, password);
                 } else {
-                    var choices = [];
                     story.currentChoices.forEach(function(choice) {
-                        choices.push(choice);
-                    });
-                    choices.sort(function(a, b){return a.index > b.index})
-                    choices.forEach(function(choice) {
                         submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
                     });
                 }
@@ -121,12 +124,14 @@
                     var splitTag = splitPropertyTag(tag);
 
                     if(splitTag.property == "IMAGE") {
-                        submitUpdate("displayImage", splitTag.val, playerNum, password);
+                        for(var i = 0; i <= totalPlayers; i++) {
+                            submitUpdate("displayImage", splitTag.val, i, password);
+                        }
                     }
                 }
             }
 
-            else if(event.message.type == "displayImage" &&
+            else if(event.message.type == "displayImage" && playerNum == event.message.index &&
                     event.message.password == password) {
 
                 previousBottomEdge = contentBottomEdgeY();
@@ -153,7 +158,7 @@
 
             }
 
-            else if(event.message.type == "receiveChoice" &&
+            else if(event.message.type == "receiveChoice" && playerNum == event.message.index &&
                     event.message.password == password) {
 
                 delay = 0.0
@@ -174,10 +179,11 @@
                 var choiceAnchorEl = choiceParagraphElement.querySelectorAll("a")[0];
 
                 choiceAnchorEl.addEventListener("click", function(event) {
-
                     event.preventDefault();
+                    for(var i = 0; i <= totalPlayers; i++) {
+                        submitUpdate("madeChoice", "", i, password);
+                    }
                     submitUpdate("selectChoice", choiceIndex, playerNum, password);
-
                 });
 
                 storyContainer.style.height = contentBottomEdgeY()+"px";
@@ -194,18 +200,16 @@
                     // Tell the story where to go next
                     story.ChooseChoiceIndex(choiceIndex);
 
-                    submitUpdate("madeChoice", "", event.message.index, password);
+                    submitUpdate("requestParagraph", "", event.message.index, password);
                  }
 
             }
 
-            else if(event.message.type == "madeChoice" &&
+            else if(event.message.type == "madeChoice" && playerNum == event.message.index &&
                     event.message.password == password) {
 
                 firstMessage = true;
                 removeAll("p.choice");
-                submitUpdate("requestParagraph", "", event.message.index, password);
-
             }
 
             else if(event.message.type == "removeAllContent" && event.message.password == password) {
@@ -225,18 +229,20 @@
                    password == event.message.password &&
                    isHost) { // the password is correct
                     clientIDs.push(event.message.index);
-                    submitUpdate("welcome", "Welcome " + event.message.text + ".", clientUUID, password);
-                    submitUpdate("joinResponse-setID", 0, event.message.index, event.message.password);
+                    totalPlayers++;
+
+                    submitUpdate("welcome", "Welcome, " + event.message.text + ".", clientUUID, password);
+                    submitUpdate("joinResponse-setID", totalPlayers, event.message.index, event.message.password);
                 }
 
             }
 
             // GUEST FUNC
             else if(event.message.type == "joinResponse-setID") {
-
                 if(clientUUID == event.message.index &&
                     password == event.message.password &&
                     !isHost) { // for guest
+                    totalPlayers = playerNum;
                     playerNum = event.message.text;
                     removeConnectivityInputFields();
                     displayMessage("Waiting...", "Waiting for host to begin game.");
@@ -244,7 +250,7 @@
                     removeAll('p');
                     removeAll('p.choice');
 
-                    displayNextParagraph("Welcome, Skybounder.", false);
+                    displayNextParagraph("Welcome, Skybounder " + playerNum + ".", false);
                 } else if(clientUUID == event.message.index && password != event.message.password && !isHost) {
                     displayMessage("Error", "Failure to join. Check password and try again.")
                 }
@@ -503,6 +509,8 @@
 
                     displayNextParagraph("Welcome, Skybounder.", false);
 
+                    totalPlayers++;
+                    playerNum = totalPlayers;
                     submitUpdate("requestParagraph", "host", playerNum, password);
 
                     submitUpdate("removeAllContent", "", i, password);
