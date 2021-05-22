@@ -53,48 +53,7 @@
     pubnub.addListener({
         message: function(event) {
 
-            // ANY PLAYER FUNC
-            if(event.message.type == "passGameToPlayer" &&
-               event.message.index == playerNum &&
-               event.message.password == password) {
-
-                submitUpdate("requestParagraph", "", playerNum, password);
-
-            }
-
-            // HOST FUNC
-            else if(event.message.type == "requestParagraph" && isHost &&
-                    event.message.password == password) {
-
-                lastStoryElement = story.Continue();
-
-                submitUpdate("receiveParagraph", lastStoryElement, event.message.index, password);
-            }
-
-            // HOST FUNC
-            else if(event.message.type == "continueIfCan" && isHost &&
-                    event.message.password == password) {
-
-                if(story.canContinue)
-                {
-                    submitUpdate("receiveParagraph", story.Continue(), event.message.index, password);
-                } else {
-                    var choices = [];
-                    story.currentChoices.forEach(function(choice) {
-                        choices.push(choice);
-                    });
-                    choices.sort(function(a, b){return a.index > b.index})
-                    choices.forEach(function(choice) {
-                        submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
-                    });
-                }
-
-            }
-
-            // ANY PLAYER FUNC
-            else if(event.message.type == "receiveParagraph" &&
-                    event.message.password == password) {
-
+            if(event.message.type == "receiveParagraph" && event.message.password == password) {
                 var paragraphIndex = 0;
 
                 // Don't over-scroll past new content
@@ -127,6 +86,25 @@
                 delay += 200.0;
 
                 submitUpdate("continueIfCan", "", playerNum, password);
+            }
+
+            // HOST FUNC
+            else if(event.message.type == "continueIfCan" && isHost &&
+                    event.message.password == password) {
+
+                if(story.canContinue)
+                {
+                    submitUpdate("receiveParagraph", story.Continue(), event.message.index, password);
+                } else {
+                    var choices = [];
+                    story.currentChoices.forEach(function(choice) {
+                        choices.push(choice);
+                    });
+                    choices.sort(function(a, b){return a.index > b.index})
+                    choices.forEach(function(choice) {
+                        submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
+                    });
+                }
 
             }
 
@@ -194,12 +172,7 @@
                 choiceAnchorEl.addEventListener("click", function(event) {
 
                     event.preventDefault();
-
-                    if(choiceText.includes("Begin")) {
-                        submitUpdate("selectChoiceAndAdvance", choiceIndex, playerNum, password);
-                    } else {
-                        submitUpdate("selectChoice", choiceIndex, playerNum, password);
-                    }
+                    submitUpdate("selectChoice", choiceIndex, playerNum, password);
 
                 });
 
@@ -222,26 +195,6 @@
 
             }
 
-            else if(event.message.type == "selectChoiceAndAdvance" && isHost &&
-                    event.message.password == password) {
-
-                var choiceIndex = event.message.text;
-                if(choiceIndex >= 0) {
-                    // Tell the story where to go next
-                    story.ChooseChoiceIndex(choiceIndex);
-
-                    submitUpdate("removeAllContent", "", event.message.index, password);
-
-                    // var nextPlayer = event.message.index + 1;
-                    // if(nextPlayer > totalPlayers) {
-                    //     nextPlayer = 1;
-                    // }
-
-                    submitUpdate("madeChoice", "", nextReader, password);
-                 }
-
-            }
-
             else if(event.message.type == "madeChoice" &&
                     event.message.password == password) {
 
@@ -258,15 +211,6 @@
                 removeAll("img");
                 removeMessageArea();
 
-            }
-
-            else if(event.message.type == "addRefreshStoryButton" && event.message.password == password && !isHost) {
-                // addRefreshStoryButton();
-            }
-
-            // HOST FUNC
-            else if(event.message.type == "requestStoryRefresh" && isHost && event.message.password == password && nextReader == event.message.index) {
-                submitUpdate("receiveParagraph", lastStoryElement, event.message.index, password);
             }
 
             // HOST FUNC
@@ -369,17 +313,6 @@
             el.style.visibility = 'hidden';
         });
     };
-
-    addRefreshStoryButton = function() {
-        let newButton = document.createElement('input');
-        newButton.setAttribute("id", "refresh");
-        newButton.setAttribute("type", "submit");
-        newButton.setAttribute("value", "Refresh Story");
-        document.getElementById('button-area').after(newButton);
-        newButton.addEventListener("click", () => {
-            submitUpdate("requestStoryRefresh", "", playerNum, password);
-        });
-    }
 
     displayNextParagraph = function(text, shouldUpdate) {
         var paragraphIndex = 0;
