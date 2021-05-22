@@ -130,40 +130,6 @@
 
             }
 
-            else if(event.message.type == "receiveStats" &&
-                    event.message.password == password) {
-
-                var paragraphIndex = 0;
-
-                // Don't over-scroll past new content
-                if(firstMessage)
-                {
-                    previousBottomEdge = contentBottomEdgeY();
-                    firstMessage = false;
-                }
-
-
-                // Get ink to generate the next paragraph
-                var paragraphText = event.message.text;
-
-                // Any special tags included with this line
-                var customClasses = [];
-
-                // Create paragraph element (initially hidden)
-                var paragraphElement = document.createElement('p');
-                paragraphElement.innerHTML = paragraphText;
-                storyContainer.appendChild(paragraphElement);
-
-                // Add any custom classes derived from ink tags
-                for(var i=0; i<customClasses.length; i++)
-                    paragraphElement.classList.add(customClasses[i]);
-
-                // Fade in paragraph after a short delay
-                showAfter(delay, paragraphElement);
-                delay += 200.0;
-
-            }
-
             else if(event.message.type == "requestTag" && isHost && event.message.password == password) {
                 var tags = story.currentTags;
                 for(var i=0; i<tags.length; i++) {
@@ -330,7 +296,7 @@
                     removeAll('p');
                     removeAll('p.choice');
 
-                    displayNextParagraph("Welcome, Skybounder."", false);
+                    displayNextParagraph("Welcome, Skybounder.", false);
                 } else if(clientUUID == event.message.index && password != event.message.password && !isHost) {
                     displayMessage("Error", "Failure to join. Check password and try again.")
                 }
@@ -448,19 +414,6 @@
                 iDelay += 200.0;
                 submitUpdate("displayImage", splitTag.val, playerNum, password);
             }
-
-            // if( splitTag.property == "ADVANCE" ) {
-            //     removeAll("p");
-            //     var nextPlayer = playerNum + 1;
-            //     displayMessage("PLAYER", nextPlayer + "'s turn.");
-            //     if(nextPlayer > totalPlayers) {
-            //         nextPlayer = 1;
-            //     }
-
-            //     submitUpdate("receiveParagraphAfterAdvancing", paragraphText, nextPlayer, password);
-
-            //     return;
-            // }
         }
 
         // Create paragraph element (initially hidden)
