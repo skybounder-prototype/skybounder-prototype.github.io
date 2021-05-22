@@ -562,21 +562,13 @@
 
                 if(choice.text == "Begin Game") {
                     // Tell the story where to go next
-                    totalPlayers++;
-                    playerNum = totalPlayers;
-                    nextReader = playerNum;
                     removeMessageArea();
 
                     displayNextParagraph("Welcome, Skybounder.", false);
 
                     submitUpdate("requestParagraph", "host", playerNum, password);
-                    // submitUpdate("addRefreshStoryButton", "", "", password);
-                    // addRefreshStoryButton();
-                    for(let i = 1; i <= totalPlayers; i++) {
-                        if(i != playerNum) {
-                            submitUpdate("removeAllContent", "", i, password);
-                        }
-                    }
+
+                    submitUpdate("removeAllContent", "", i, password);
                 } else if(choice.text == "Host") {
                     hostButton.hidden = false;
                     document.getElementById('password').hidden = false;
