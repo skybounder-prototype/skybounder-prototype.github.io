@@ -53,7 +53,11 @@
     pubnub.addListener({
         message: function(event) {
 
-            if(event.message.type == "receiveParagraph" && event.message.password == password) {
+            if(event.message.type == "requestParagraph" && isHost && event.message.password == password) {
+                submitUpdate("receiveParagraph", story.Continue(), event.message.index, password);
+            }
+
+            else if(event.message.type == "receiveParagraph" && event.message.password == password) {
                 var paragraphIndex = 0;
 
                 // Don't over-scroll past new content
