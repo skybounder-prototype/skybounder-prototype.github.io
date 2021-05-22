@@ -180,9 +180,6 @@
 
                 choiceAnchorEl.addEventListener("click", function(event) {
                     event.preventDefault();
-                    for(var i = 0; i <= totalPlayers; i++) {
-                        submitUpdate("madeChoice", "", i, password);
-                    }
                     submitUpdate("selectChoice", choiceIndex, playerNum, password);
                 });
 
@@ -199,6 +196,10 @@
                 if(choiceIndex >= 0) {
                     // Tell the story where to go next
                     story.ChooseChoiceIndex(choiceIndex);
+
+                    for(var i = 0; i <= totalPlayers; i++) {
+                        submitUpdate("madeChoice", "", i, password);
+                    }
 
                     submitUpdate("requestParagraph", "", event.message.index, password);
                  }
