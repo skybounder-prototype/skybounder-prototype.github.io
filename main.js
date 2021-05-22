@@ -1,202 +1,21 @@
-let ADVENTURER = 0;
-let GUARDIAN = 1;
-let SCHOLAR = 2;
-let HEALER = 3;
-let SLAYER = 4;
-let THIEF = 5;
-
-class PlayerTypeCount {
-    constructor(advPoints, guaPoints, schPoints, heaPoints, slaPoints, thiPoints) {
-        this.points = [[ADVENTURER, advPoints], 
-                       [GUARDIAN, guaPoints], 
-                       [SCHOLAR, schPoints], 
-                       [HEALER, heaPoints], 
-                       [SLAYER, slaPoints], 
-                       [THIEF, thiPoints]];
-    }
-
-    sortPoints() {
-        this.points.sort(function(a, b) {
-            return a[1] < b[1];
-        });
-    }
-
-    determineRole(rolesTaken) {
-        var role = -1;
-
-        for(var i = 0; i < this.points.length && role == -1; i++) {
-            if(!rolesTaken.includes(this.points[i][0])) {
-                role = this.points[i][0];
-            }
-        }
-
-        console.log(role);
-        return role;
-    }
-}
-
 (function(storyContent) {
         // Create ink story from the content using inkjs
     var story = new inkjs.Story(storyContent);
-    let playerTypeCounts = [];
-    var healerPoints;
-    var slayerPoints;
-    var thiefPoints;
-
-    story.ObserveVariable("current_player_num", (varName, newValue) => {
-        setNextReader(newValue);
-    });
-    story.ObserveVariable("total_players", (varName, newValue) => {
-        setTotalPlayers(newValue);
-    });
-    story.ObserveVariable("finished_setting_player_type_vals", (varName, newValue) => {
-        setPlayerTypeCounts();
-
-        for(var i = 0; i < playerTypeCounts.length; i++){
-            playerTypeCounts[i].sortPoints();
-        }
-
-        // log vals to check
-        // for(var i = 0; i < playerTypeCounts.length; i++) {
-        //     for(var j = 0; j < playerTypeCounts[i].points.length; j++) {
-        //         console.log(playerTypeCounts[i].points[j][0] + " " + playerTypeCounts[i].points[j][1]);
-        //     }
-        // }
-
-        var rolesTaken = [];
-        for(var i = 0; i < playerTypeCounts.length; i++) {
-            rolesTaken.push(playerTypeCounts[i].determineRole(rolesTaken));
-        }
-
-        story.variablesState["player_1_role_index"] = rolesTaken[0] + 1;
-        story.variablesState["player_2_role_index"] = rolesTaken[1] + 1;
-        story.variablesState["player_3_role_index"] = rolesTaken[2] + 1;
-        story.variablesState["player_4_role_index"] = rolesTaken[3] + 1;
-        if(totalPlayers > 4) story.variablesState["player_5_role_index"] = rolesTaken[4] + 1;
-        if(totalPlayers > 5) story.variablesState["player_6_role_index"] = rolesTaken[5] + 1;
-
-        healerPoints = [];
-        for(var i = 0; i < playerTypeCounts.length; i++) {
-            healerPoints.push([i + 1, playerTypeCounts[i].points[HEALER][1]]);
-        }
-        healerPoints.sort(function(a, b) {
-            return a[1] > b[1];
-        });
-        for(var i = 0; i < healerPoints.length; i++) {
-            story.variablesState["spirit_rank_" + (i + 1)] = healerPoints[i][0];
-        }
-
-        slayerPoints = [];
-        for(var i = 0; i < playerTypeCounts.length; i++) {
-            slayerPoints.push([i + 1, playerTypeCounts[i].points[SLAYER][1]]);
-        }
-        slayerPoints.sort(function(a, b) {
-            return a[1] > b[1];
-        });
-        for(var i = 0; i < slayerPoints.length; i++) {
-            story.variablesState["bloodlust_rank_" + (i + 1)] = slayerPoints[i][0];
-        }
-
-        thiefPoints = [];
-        for(var i = 0; i < playerTypeCounts.length; i++) {
-            thiefPoints.push([i + 1, playerTypeCounts[i].points[THIEF][1]]);
-        }
-        thiefPoints.sort(function(a, b) {
-            return a[1] > b[1];
-        });
-        for(var i = 0; i < thiefPoints.length; i++) {
-            story.variablesState["agility_rank_" + (i + 1)] = thiefPoints[i][0];
-        }
-    });
-
-    setPlayerTypeCounts = function() {
-        playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_1_adventurer_points"],
-                                                  story.variablesState["player_1_guardian_points"],
-                                                  story.variablesState["player_1_scholar_points"],
-                                                  story.variablesState["player_1_healer_points"],
-                                                  story.variablesState["player_1_slayer_points"],
-                                                  story.variablesState["player_1_thief_points"]));
-
-        playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_2_adventurer_points"],
-                                                  story.variablesState["player_2_guardian_points"],
-                                                  story.variablesState["player_2_scholar_points"],
-                                                  story.variablesState["player_2_healer_points"],
-                                                  story.variablesState["player_2_slayer_points"],
-                                                  story.variablesState["player_2_thief_points"]));
-
-        playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_3_adventurer_points"],
-                                                  story.variablesState["player_3_guardian_points"],
-                                                  story.variablesState["player_3_scholar_points"],
-                                                  story.variablesState["player_3_healer_points"],
-                                                  story.variablesState["player_3_slayer_points"],
-                                                  story.variablesState["player_3_thief_points"]));
-
-        playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_4_adventurer_points"],
-                                                  story.variablesState["player_4_guardian_points"],
-                                                  story.variablesState["player_4_scholar_points"],
-                                                  story.variablesState["player_4_healer_points"],
-                                                  story.variablesState["player_4_slayer_points"],
-                                                  story.variablesState["player_4_thief_points"]));
-
-        if(totalPlayers > 4) {
-            playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_5_adventurer_points"],
-                                                  story.variablesState["player_5_guardian_points"],
-                                                  story.variablesState["player_5_scholar_points"],
-                                                  story.variablesState["player_5_healer_points"],
-                                                  story.variablesState["player_5_slayer_points"],
-                                                  story.variablesState["player_5_thief_points"]));
-        }
-
-        if(totalPlayers > 5) {
-            playerTypeCounts.push(new PlayerTypeCount(story.variablesState["player_6_adventurer_points"],
-                                                  story.variablesState["player_6_guardian_points"],
-                                                  story.variablesState["player_6_scholar_points"],
-                                                  story.variablesState["player_6_healer_points"],
-                                                  story.variablesState["player_6_slayer_points"],
-                                                  story.variablesState["player_6_thief_points"]));
-        }
-    };
-
-    getStatRankForPlayer = function(stat, playerNum) {
-        for(var i = 1; i <= totalPlayers; i++) {
-            if(story.variablesState[stat + "_rank_" + i] == playerNum) {
-                return i;
-            }
-        }
-    };
 
     var firstMessage = true;
     var password = "sakhfg3467dalk43sbfekb;das";
     var clientIDs = [];
     var playerNum = 0;
-    var characterRole = "";
-    var totalPlayers = 0;
     var isHost = false;
     var delay = 0.0;
     var pDelay = 0.0;
     var cDelay = 0.0;
     var iDelay = 0.0;
-    var nextReader = 1;
     var lastStoryElement;
 
     var outerScrollContainer = document.querySelector('.outerContainer');
     var storyContainer = document.querySelector('#story');
     var previousBottomEdge = 0;
-    var NO_WEAPON = 0;
-    var RED = 1;
-    var ORANGE = 2;
-    var YELLOW = 3;
-    var GREEN = 4;
-    var BLUE = 5;
-    var PURPLE = 6;
-    var color_dict = {1: "Red", 2: "Orange", 3: "Armor", 4: "Green", 5: "Blue", 6: "Purple"};
-
-    var WEAPON = 1;
-    var RING = 2;
-    var ARMOR = 3;
-    var HELM = 4;
-    var FOOTWEAR = 5;
-    var equipment_dict = {1: "Weapon", 2: "Ring", 3: "Armor", 4: "Helm", 5: "Footwear"};
     // start pubnub
 
     const messagesTop = document.getElementById('messages-top');
@@ -233,15 +52,15 @@ class PlayerTypeCount {
 
     pubnub.addListener({
         message: function(event) {
-            
+
             // ANY PLAYER FUNC
-            if(event.message.type == "passGameToPlayer" && 
-               event.message.index == playerNum && 
+            if(event.message.type == "passGameToPlayer" &&
+               event.message.index == playerNum &&
                event.message.password == password) {
 
                 submitUpdate("requestParagraph", "", playerNum, password);
 
-            } 
+            }
 
             // HOST FUNC
             else if(event.message.type == "requestParagraph" && isHost &&
@@ -250,7 +69,7 @@ class PlayerTypeCount {
                 lastStoryElement = story.Continue();
 
                 submitUpdate("receiveParagraph", lastStoryElement, event.message.index, password);
-            } 
+            }
 
             // HOST FUNC
             else if(event.message.type == "continueIfCan" && isHost &&
@@ -270,14 +89,14 @@ class PlayerTypeCount {
                     });
                 }
 
-            } 
+            }
 
             // ANY PLAYER FUNC
-            else if(event.message.type == "receiveParagraph" && event.message.index == playerNum &&
+            else if(event.message.type == "receiveParagraph" &&
                     event.message.password == password) {
 
                 var paragraphIndex = 0;
-                
+
                 // Don't over-scroll past new content
                 if(firstMessage)
                 {
@@ -298,7 +117,7 @@ class PlayerTypeCount {
                 var paragraphElement = document.createElement('p');
                 paragraphElement.innerHTML = paragraphText;
                 storyContainer.appendChild(paragraphElement);
-                
+
                 // Add any custom classes derived from ink tags
                 for(var i=0; i<customClasses.length; i++)
                     paragraphElement.classList.add(customClasses[i]);
@@ -311,11 +130,11 @@ class PlayerTypeCount {
 
             }
 
-            else if(event.message.type == "receiveStats" && event.message.index == playerNum &&
+            else if(event.message.type == "receiveStats" &&
                     event.message.password == password) {
 
                 var paragraphIndex = 0;
-                
+
                 // Don't over-scroll past new content
                 if(firstMessage)
                 {
@@ -334,7 +153,7 @@ class PlayerTypeCount {
                 var paragraphElement = document.createElement('p');
                 paragraphElement.innerHTML = paragraphText;
                 storyContainer.appendChild(paragraphElement);
-                
+
                 // Add any custom classes derived from ink tags
                 for(var i=0; i<customClasses.length; i++)
                     paragraphElement.classList.add(customClasses[i]);
@@ -375,7 +194,7 @@ class PlayerTypeCount {
 
                 scrollDown(contentBottomEdgeY());
 
-            } 
+            }
 
             else if(event.message.type == "requestChoices" && isHost &&
                     event.message.password == password) {
@@ -384,9 +203,9 @@ class PlayerTypeCount {
                     submitUpdate("receiveChoice", choice.text + ":" + choice.index, event.message.index, password);
                 });
 
-            } 
+            }
 
-            else if(event.message.type == "receiveChoice" && event.message.index == playerNum &&
+            else if(event.message.type == "receiveChoice" &&
                     event.message.password == password) {
 
                 delay = 0.0
@@ -412,39 +231,10 @@ class PlayerTypeCount {
 
                     if(choiceText.includes("Begin")) {
                         submitUpdate("selectChoiceAndAdvance", choiceIndex, playerNum, password);
-                    } else if(choiceText.includes("Display Stats")) {
-                        for(var i = 1; i <= totalPlayers; i++) {
-                            var textToSend = "";
-
-                            if(story.variablesState["player_" + i + "_equipment_type"] != story.variablesState["NO_WEAPON"]) {
-                                textToSend = "Draw the " + color_dict[story.variablesState["player_" + i + "_equipment_color"]] + " " + equipment_dict[story.variablesState["player_" + i + "_equipment_type"]] + ".\r";
-                                submitUpdate("receiveStats", textToSend, i, password);
-                            }
-                            
-                            textToSend = "Hearts: " + (2 + story.variablesState["player_" + i + "_bonus_hearts"] + Math.floor(story.variablesState["player_" + i + "_guardian_points"] / 3)) + "\r";
-                            submitUpdate("receiveStats", textToSend, i, password);
-
-                            textToSend = "Intellect: " + (1 + story.variablesState["player_" + i + "_bonus_intellect"] + Math.floor(story.variablesState["player_" + i + "_scholar_points"] / 3)) + "\r";
-                            submitUpdate("receiveStats", textToSend, i, password);
-
-                            textToSend = "Spirit Power: " + (7 - getStatRankForPlayer("spirit", i)) + "\r";
-                            submitUpdate("receiveStats", textToSend, i, password);
-
-                            textToSend = "Agility Power: " + (7 - getStatRankForPlayer("agility", i)) + "\r";
-                            submitUpdate("receiveStats", textToSend, i, password);
-
-                            textToSend = "Bloodlust Power: " + (7 - getStatRankForPlayer("bloodlust", i)) + "\r";
-                            submitUpdate("receiveStats", textToSend, i, password);
-
-                            textToSend = "Gold: " + story.variablesState["player_" + i + "_gold"] + "\r";
-                            submitUpdate("receiveStats", textToSend, i, password);
-                        }
-
-                        submitUpdate("selectChoice", choiceIndex, playerNum, password);
                     } else {
                         submitUpdate("selectChoice", choiceIndex, playerNum, password);
                     }
-                    
+
                 });
 
                 storyContainer.style.height = contentBottomEdgeY()+"px";
@@ -484,9 +274,9 @@ class PlayerTypeCount {
                     submitUpdate("madeChoice", "", nextReader, password);
                  }
 
-            } 
+            }
 
-            else if(event.message.type == "madeChoice" && event.message.index == playerNum &&
+            else if(event.message.type == "madeChoice" &&
                     event.message.password == password) {
 
                 firstMessage = true;
@@ -495,7 +285,7 @@ class PlayerTypeCount {
 
             }
 
-            else if(event.message.type == "removeAllContent" && event.message.index == playerNum && event.message.password == password) {
+            else if(event.message.type == "removeAllContent" && event.message.password == password) {
 
                 removeAll("p");
                 removeAll("p.choice");
@@ -520,36 +310,32 @@ class PlayerTypeCount {
                    !clientIDs.includes(event.message.index) && // the sender has not joined the receiver
                    password == event.message.password &&
                    isHost) { // the password is correct
-                    totalPlayers++;
                     clientIDs.push(event.message.index);
                     submitUpdate("welcome", "Welcome " + event.message.text + ".", clientUUID, password);
-                    submitUpdate("joinResponse-setID", totalPlayers, event.message.index, event.message.password);
+                    submitUpdate("joinResponse-setID", 0, event.message.index, event.message.password);
                 }
 
-            } 
+            }
 
             // GUEST FUNC
             else if(event.message.type == "joinResponse-setID") {
-                
-                if(clientUUID == event.message.index && 
+
+                if(clientUUID == event.message.index &&
                     password == event.message.password &&
                     !isHost) { // for guest
                     playerNum = event.message.text;
-                    totalPlayers = playerNum;
                     removeConnectivityInputFields();
                     displayMessage("Waiting...", "Waiting for host to begin game.");
-
-                    setSkybounderPlayerNum();
 
                     removeAll('p');
                     removeAll('p.choice');
 
-                    displayNextParagraph("You are Skybounder " + playerNum + ".", false);
+                    displayNextParagraph("Welcome, Skybounder."", false);
                 } else if(clientUUID == event.message.index && password != event.message.password && !isHost) {
                     displayMessage("Error", "Failure to join. Check password and try again.")
                 }
 
-            } 
+            }
 
             // GUEST AND HOST FUNC
             else if(event.message.type == "welcome" &&
@@ -618,25 +404,6 @@ class PlayerTypeCount {
         });
     };
 
-    setNextReader = function(currentPlayerNum) {
-        nextReader = currentPlayerNum - 1;
-
-        if(nextReader == 0) {
-            nextReader = totalPlayers;
-        }
-    };
-
-    setTotalPlayers = function(newValue) {
-        totalPlayers = newValue;
-    };
-
-    setSkybounderPlayerNum = function() {
-        let header2 = document.createElement('h2');
-        header2.setAttribute("class", "subtitle");
-        document.getElementById('title').after(header2);
-        header2.appendChild(document.createTextNode("Skybounder " + playerNum));
-    }
-
     addRefreshStoryButton = function() {
         let newButton = document.createElement('input');
         newButton.setAttribute("id", "refresh");
@@ -650,7 +417,7 @@ class PlayerTypeCount {
 
     displayNextParagraph = function(text, shouldUpdate) {
         var paragraphIndex = 0;
-                
+
         // Don't over-scroll past new content
         if(firstMessage)
         {
@@ -667,7 +434,7 @@ class PlayerTypeCount {
         var customClasses = [];
         for(var i=0; i<tags.length; i++) {
             var tag = tags[i];
-            
+
             // Detect tags of the form "X: Y". Currently used for IMAGE and CLASS but could be
             // customised to be used for other things too.
             var splitTag = splitPropertyTag(tag);
@@ -691,7 +458,7 @@ class PlayerTypeCount {
             //     }
 
             //     submitUpdate("receiveParagraphAfterAdvancing", paragraphText, nextPlayer, password);
-                
+
             //     return;
             // }
         }
@@ -700,7 +467,7 @@ class PlayerTypeCount {
         var paragraphElement = document.createElement('p');
         paragraphElement.innerHTML = paragraphText;
         storyContainer.appendChild(paragraphElement);
-        
+
         // Add any custom classes derived from ink tags
         for(var i=0; i<customClasses.length; i++)
             paragraphElement.classList.add(customClasses[i]);
@@ -725,12 +492,12 @@ class PlayerTypeCount {
         for(var i=0; i<story.globalTags.length; i++) {
             var globalTag = story.globalTags[i];
             var splitTag = splitPropertyTag(globalTag);
-            
+
             // THEME: dark
             if( splitTag && splitTag.property == "theme" ) {
                 document.body.classList.add(splitTag.val);
             }
-            
+
             // author: Your Name
             else if( splitTag && splitTag.property == "author" ) {
                 var byline = document.querySelector('.byline');
@@ -749,7 +516,7 @@ class PlayerTypeCount {
 
         var paragraphIndex = 0;
         var delay = 0.0;
-        
+
         // Don't over-scroll past new content
         var previousBottomEdge = firstTime ? 0 : contentBottomEdgeY();
 
@@ -759,7 +526,7 @@ class PlayerTypeCount {
             // Get ink to generate the next paragraph
             var paragraphText = story.Continue();
             var tags = story.currentTags;
-            
+
             // Any special tags included with this line
             var customClasses = [];
             for(var i=0; i<tags.length; i++) {
@@ -789,7 +556,7 @@ class PlayerTypeCount {
                 else if( tag == "CLEAR" || tag == "RESTART" ) {
                     removeAll("p");
                     removeAll("img");
-                    
+
                     // Comment out this line if you want to leave the header visible when clearing
                     setVisible(".header", false);
 
@@ -804,7 +571,7 @@ class PlayerTypeCount {
             var paragraphElement = document.createElement('p');
             paragraphElement.innerHTML = paragraphText;
             storyContainer.appendChild(paragraphElement);
-            
+
             // Add any custom classes derived from ink tags
             for(var i=0; i<customClasses.length; i++)
                 paragraphElement.classList.add(customClasses[i]);
@@ -845,10 +612,9 @@ class PlayerTypeCount {
                     totalPlayers++;
                     playerNum = totalPlayers;
                     nextReader = playerNum;
-                    setSkybounderPlayerNum();
                     removeMessageArea();
 
-                    displayNextParagraph("You are Skybounder " + playerNum + ".", false);
+                    displayNextParagraph("Welcome, Skybounder.", false);
 
                     submitUpdate("requestParagraph", "host", playerNum, password);
                     // submitUpdate("addRefreshStoryButton", "", "", password);
@@ -909,7 +675,7 @@ class PlayerTypeCount {
 
         // Line up top of screen with the bottom of where the previous content ended
         var target = previousBottomEdge;
-        
+
         // Can't go further than the very bottom of the page
         var limit = outerScrollContainer.scrollHeight - outerScrollContainer.clientHeight;
         if( target > limit ) target = limit;
@@ -967,7 +733,7 @@ class PlayerTypeCount {
         var propertySplitIdx = tag.indexOf(":");
         if( propertySplitIdx != null ) {
             var property = tag.substr(0, propertySplitIdx).trim();
-            var val = tag.substr(propertySplitIdx+1).trim(); 
+            var val = tag.substr(propertySplitIdx+1).trim();
             return {
                 property: property,
                 val: val
