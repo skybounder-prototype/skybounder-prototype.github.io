@@ -101,6 +101,7 @@
                     submitUpdate("continueIfCan", "", playerNum, password);
                 }
 
+                scrollDown(contentBottomEdgeY());
             }
 
             // HOST FUNC
