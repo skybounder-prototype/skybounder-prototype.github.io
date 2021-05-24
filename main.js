@@ -117,9 +117,17 @@
                         story.currentChoices.forEach(function(choice) {
                             submitUpdate("receiveChoice", choice.text + ":" + choice.index, totalPlayers, password);
                         });
+                    } else {
+                        for(var i = 1; i < totalPlayers; i++) {
+                            submitUpdate("scrollToBottom", "", i, password);
+                        }
                     }
                 }
 
+            }
+
+            else if(event.message.type == "scrollToBottom" && playerNum == event.message.index && event.message.password == password) {
+                scrollDown(contentBottomEdgeY());
             }
 
             else if(event.message.type == "requestTag" && isHost && event.message.password == password) {
