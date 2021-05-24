@@ -115,9 +115,7 @@
                 } else {
                     if(playerNum == totalPlayers) {
                         story.currentChoices.forEach(function(choice) {
-                            for(var i = 1; i <= totalPlayers; i++) {
-                                submitUpdate("receiveChoice", choice.text + ":" + choice.index, i, password);
-                            }
+                            submitUpdate("receiveChoice", choice.text + ":" + choice.index, totalPlayers, password);
                         });
                     }
                 }
