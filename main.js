@@ -100,8 +100,6 @@
                 if(isHost) {
                     submitUpdate("continueIfCan", "", playerNum, password);
                 }
-
-                scrollDown(contentBottomEdgeY());
             }
 
             // HOST FUNC
@@ -118,7 +116,7 @@
                         story.currentChoices.forEach(function(choice) {
                             submitUpdate("receiveChoice", choice.text + ":" + choice.index, totalPlayers, password);
                         });
-                    } else {
+
                         for(var i = 1; i < totalPlayers; i++) {
                             submitUpdate("scrollToBottom", "", i, password);
                         }
